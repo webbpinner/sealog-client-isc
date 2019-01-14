@@ -1,10 +1,10 @@
 {
-  "name": "sealog-jason-client",
-  "version": "0.2.0",
-  "license": "MIT",
-  "description": "Sealog event-logging client built for sealog-jason-client",
+  "name": "sealog-client-isc",
+  "version": "0.3.0",
+  "license": "GPLv3",
+  "description": "Sealog event-logging client built for sealog-server-jason for use at the URI ISC",
   "bugs": {
-    "url": "https://github.com/webbpinner/sealog-client-jason/issues"
+    "url": "https://github.com/webbpinner/sealog-client-isc/issues"
   },
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/webbpinner/sealog-client-jason.git"
+    "url": "https://github.com/webbpinner/sealog-client-isc.git"
   },
   "keywords": [
     "react",
@@ -27,7 +27,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "connected-react-router": "^4.5.0",
-    "filepond": "^3.6.0",
+    "filepond": "^3.7.4",
     "js-file-download": "^0.4.4",
     "moment": "^2.22.2",
     "moment-duration-format": "^2.2.2",
@@ -70,6 +70,6 @@
     "style-loader": "^0.23.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.9"
+    "webpack-dev-server": "^3.1.14"
   }
 }
