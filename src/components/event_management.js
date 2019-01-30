@@ -10,10 +10,9 @@ import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
 import DeleteEventModal from './delete_event_modal';
-import EventShowDetailsModal from './event_show_details_modal_ex_edu';
-import EventPermalinkModal from './event_permalink_modal';
+import EventShowDetailsModal from './event_show_details_modal';
 import * as actions from '../actions';
-import { ROOT_PATH, API_ROOT_URL } from '../url_config';
+import { ROOT_PATH, API_ROOT_URL } from '../client_config';
 
 let fileDownload = require('js-file-download');
 
@@ -301,60 +300,39 @@ class EventManagement extends Component {
 
     if(this.state.events && this.state.events.length > 0){
 
-      let eventArray = []
-
-      for (let i = (this.state.activePage-1) * maxEventsPerPage; i < this.state.activePage * maxEventsPerPage; i++) {
-
-        if(i >= this.state.events.length)
-          break
-
-        let event = this.state.events[i]
+      let eventList = this.state.events.map((event, index) => {
+        if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
         
-        let comment_exists = false;
-        let edu_event = (event.event_value == "EDU")? true : false;
-        let seatube_exists = false;
-        let seatube_permalink = '';
-        let youtube_material = false;
+          let comment_exists = false;
 
-        let eventOptionsArray = event.event_options.reduce((filtered, option) => {
-          if(option.event_option_name == 'event_comment') {
-            comment_exists = (option.event_option_value !== '')? true : false;
-          } else if(edu_event && option.event_option_name == 'seatube_permalink') {
-            seatube_exists = (option.event_option_value !== '')? true : false;
-            seatube_permalink = option.event_option_value;
-          } else if(edu_event && option.event_option_name == 'youtube_material') {
-            youtube_material = (option.event_option_value == 'Yes')? true : false;
-          } else {
-            filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
-          }
-          return filtered
-        },[])
-        
-        if (event.event_free_text) {
-          eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
-        } 
+          let eventOptionsArray = event.event_options.reduce((filtered, option) => {
+            if(option.event_option_name == 'event_comment') {
+              comment_exists = (option.event_option_value !== '')? true : false;
+            } else {
+              filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
+            }
+            return filtered
+          },[])
+          
+          if (event.event_free_text) {
+            eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
+          } 
 
-        let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
-        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon icon='plus' fixedWidth inverse transform="shrink-4"/></span>
-        let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
+          let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon icon='plus' fixedWidth inverse transform="shrink-4"/></span>
+          let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
 
-        let deleteIcon = <FontAwesomeIcon onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth/>
-        let deleteTooltip = (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>)
+          let deleteIcon = <FontAwesomeIcon className={"text-danger"} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth/>
+          let deleteTooltip = (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>)
 
-        let seatubeTooltip = null
-        let youtubeTooltip = null
-
-        if(edu_event) {
-          seatubeTooltip = (seatube_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
-          youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
+          return (<ListGroupItem key={event.id}><Row><Col xs={11} onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</Col><Col>{deleteTooltip} {commentTooltip}</Col></Row></ListGroupItem>);
         }
+      })
 
-        eventArray.push(<ListGroupItem key={event.id}><Row><Col xs={11} onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</Col><Col>{deleteTooltip} {commentTooltip} {seatubeTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>);
-      }
-      return eventArray
+      return eventList;
     }
 
-    return (<ListGroupItem>No events found</ListGroupItem>)
+    return (<ListGroupItem key="emptyHistory" >No events found</ListGroupItem>)
   }
 
   renderEventPanel() {
@@ -429,13 +407,12 @@ class EventManagement extends Component {
         <EventCommentModal />
         <DeleteEventModal />
         <EventShowDetailsModal />
-        <EventPermalinkModal />
         <Row>
-          <Col sm={7} md={8} lg={9}>
+          <Col sm={7} md={8} lg={8}>
             {this.renderEventPanel()}
             {this.renderPagination()}
           </Col>
-          <Col sm={5} md={4} lg={3}>
+          <Col sm={5} md={4} lg={4}>
             <EventFilterForm disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} handlePostSubmit={ this.updateEventFilter } lowering_id={null}/>
           </Col>
         </Row>

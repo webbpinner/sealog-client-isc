@@ -17,11 +17,11 @@ import CruiseMenu from './components/cruise_menu';
 import Users from './components/users';
 import Tasks from './components/tasks';
 import EventLogging from './components/event_logging';
-import EventManagement from './components/event_management';
+import EventManagement from './components/event_management_ex_edu';
 import EventTemplates from './components/event_templates';
 import Lowerings from './components/lowerings';
-import LoweringReplay from './components/lowering_replay';
-import LoweringReview from './components/lowering_review';
+import LoweringReplay from './components/lowering_replay_ex_edu';
+import LoweringReview from './components/lowering_review_ex_edu';
 import Cruises from './components/cruises';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -52,16 +52,15 @@ library.add(faArrowLeft,faArrowRight,faBackward,faComment,faCompress,faDownload,
 
 require('typeface-roboto');
 
-import store from './store';
+import configureStore from './store';
 import history from './history';
 
-const cookies = new Cookies();
+const store = configureStore();
 
+const cookies = new Cookies();
 const token = cookies.get('token');
 if (token) {
-
   store.dispatch({ type: AUTH_USER });
-
 }
 
 ReactDOM.render(
@@ -70,7 +69,7 @@ ReactDOM.render(
           <div>
             <Header />
             <Route path={ `/` } exact={true} component={RequireAuth(EventLogging)}/>
-            <Route path={ `/github`} exact={true} component={() => window.location = 'https://github.com/webbpinner/sealog-client-jason'}/>
+            <Route path={ `/github`} exact={true} component={() => window.location = 'https://github.com/webbpinner/sealog-client-isc'}/>
             <Route path={ `/license`} exact={true} component={() => window.location = 'http://www.gnu.org/licenses/gpl-3.0.html'}/>
             <Route path={ `/profile` } exact={true} component={RequireAuth(Profile)} />
             <Route path={ `/register` } exact={true} component={Register} />

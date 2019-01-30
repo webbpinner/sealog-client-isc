@@ -5,7 +5,6 @@ import EventTemplateList from './event_template_list';
 import EventHistory from './event_history_ex_edu';
 import EventInput from './event_input';
 import EventCommentModal from './event_comment_modal';
-import EventPermalinkModal from './event_permalink_modal';
 import { Panel, Grid, Row, Col } from 'react-bootstrap';
 import EventShowDetailsModal from './event_show_details_modal_ex_edu';
 
@@ -21,7 +20,6 @@ class EventLogging extends Component {
   render() {
     return (
       <div>
-        {(this.props.roles && this.props.roles.includes("event_logger"))? <EventPermalinkModal/> : null }
         {(this.props.roles && this.props.roles.includes("event_logger"))? <EventCommentModal/> : null }
         <EventShowDetailsModal />
         {

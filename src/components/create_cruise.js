@@ -10,10 +10,6 @@ const dateFormat = "YYYY-MM-DD"
 
 class CreateCruise extends Component {
 
-  static propTypes = {
-    handleFormSubmit: PropTypes.func.isRequired
-  };
-
   componentWillUnmount() {
     this.props.leaveCreateCruiseForm();
   }
@@ -22,7 +18,6 @@ class CreateCruise extends Component {
     formProps.cruise_participants = (formProps.cruise_participants)? formProps.cruise_participants.map(participant => participant.trim()): [];
     formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
     this.props.createCruise(formProps);
-    this.props.handleFormSubmit()
   }
 
   renderField({ input, label, placeholder, required, type, meta: { touched, error, warning } }) {
@@ -144,7 +139,7 @@ class CreateCruise extends Component {
       if(this.props.roles.includes("admin")) {
 
         return (
-          <Panel>
+          <Panel className="form-standard" >
             <Panel.Heading>{createCruiseFormHeader}</Panel.Heading>
             <Panel.Body>
               <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
@@ -205,7 +200,7 @@ class CreateCruise extends Component {
                   name="cruise_participants"
                   component={this.renderTextArea}
                   type="textarea"
-                  label="Cruise Particpants, comma delimited"
+                  label="Cruise Participants, comma delimited"
                   placeholder="A comma-delimited list of names, i.e. Dave Butterfield,Sharon Walker"
                 />
                 <Field

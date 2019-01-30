@@ -22,7 +22,7 @@ class EventFilterForm extends Component {
 
   static propTypes = {
     handlePostSubmit: PropTypes.func.isRequired,
-    handleHide: PropTypes.func.isRequired
+    // handleHide: PropTypes.func.isRequired
   };
 
   componentWillMount() {
@@ -113,7 +113,7 @@ class EventFilterForm extends Component {
     const stopTS = (this.props.maxDate)? moment(this.props.maxDate): null
 
     return (
-      <Panel>
+      <Panel className="form-standard">
         <Panel.Heading>{eventFilterFormHeader}</Panel.Heading>
         <Panel.Body>
           <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>

@@ -3,15 +3,16 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Button, Checkbox, Row, Col, Thumbnail, ControlLabel, Panel, ListGroup, ListGroupItem, FormGroup, FormControl, FormGroupItem, Modal, Well } from 'react-bootstrap';
+import { Button, Checkbox, Row, Col, Thumbnail, ControlLabel, ListGroup, ListGroupItem, FormGroup, FormControl, FormGroupItem, Modal, Well } from 'react-bootstrap';
 import { connectModal } from 'redux-modal';
 import { LinkContainer } from 'react-router-bootstrap';
 import Datetime from 'react-datetime';
 import moment from 'moment';
+// import ImagePreviewModal from './image_preview_modal';
 
 import * as actions from '../actions';
 
-import { API_ROOT_URL, IMAGE_PATH } from '../url_config';
+import { API_ROOT_URL, IMAGE_PATH, ROOT_PATH  } from '../client_config';
 
 const cookies = new Cookies();
 
@@ -24,6 +25,7 @@ class EventShowDetailsModal extends Component {
 
     this.initEvent = this.initEvent.bind(this);
     this.handleEventUpdate = this.handleEventUpdate.bind(this);
+    // this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this);
 
   }
 
@@ -40,21 +42,38 @@ class EventShowDetailsModal extends Component {
   componentWillUnmount() {
   }
 
-  initEvent() {
-    axios.get(`${API_ROOT_URL}/api/v1/event_exports/${this.props.event.id}`,
-      {
-        headers: {
-        authorization: cookies.get('token')
-        }
-      }      
-    )
-    .then((response) => {
-      this.setState({event: response.data})
-    })
-    .catch((error) => {
+  async initEvent() {
+    try {
+      const result = await axios.get(`${API_ROOT_URL}/api/v1/event_exports/${this.props.event.id}`,
+        {
+          headers: {
+          authorization: cookies.get('token')
+          }
+        }      
+      )
+
+      this.setState({event: result.data})
+    }
+    catch (error) {
       console.log(error);
-    });
+    }
   }
+
+  // handleMissingImage(ev) {
+  //   ev.target.src = `${ROOT_PATH}images/noimage.jpeg`
+  // }
+
+  // handleImagePreviewModal(source, filepath) {
+  //   this.props.showModal('imagePreview', { name: source, filepath: filepath })
+  // }
+
+  // renderImage(source, filepath) {
+  //   return (
+  //     <Thumbnail onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)}>
+  //       <div>{`${source}`}</div>
+  //     </Thumbnail>
+  //   )
+  // }
 
   handleEventPermalinkModal() {
     this.props.showModal('eventPermalink', { event: this.state.event, handleUpdateEvent: this.handleEventUpdate });
@@ -62,8 +81,41 @@ class EventShowDetailsModal extends Component {
 
   async handleEventUpdate(event_id, event_value, event_free_text, event_options, event_ts) {
     this.props.handleUpdateEvent(event_id, event_value, event_free_text, event_options, event_ts)
-    this.initEvent()
+    try {
+      await this.initEvent()
+    }
+    catch(error) {
+      console.log(error);
+    }
   }
+
+  // renderImagerPanel() {
+  //   if(this.props.event && this.state.event.aux_data) { 
+  //     let frameGrabberData = this.state.event.aux_data.filter(aux_data => aux_data.data_source == 'framegrabber')
+  //     let tmpData = []
+
+  //     if(frameGrabberData.length > 0) {
+  //       for (let i = 0; i < frameGrabberData[0].data_array.length; i+=2) {
+    
+  //         tmpData.push({source: frameGrabberData[0].data_array[i].data_value, filepath: API_ROOT_URL + IMAGE_PATH + '/' + frameGrabberData[0].data_array[i+1].data_value.split('/').pop()} )
+  //       }
+
+  //       return (
+  //         <Row>
+  //           {
+  //             tmpData.map((image) => {
+  //               return (
+  //                 <Col key={image.source} xs={12} sm={6} md={3} lg={3}>
+  //                   {this.renderImage(image.source, image.filepath)}
+  //                 </Col>
+  //               )
+  //             })
+  //           }
+  //         </Row>
+  //       )
+  //     }
+  //   }
+  // }
 
   renderAuxDataPanel() {
 
