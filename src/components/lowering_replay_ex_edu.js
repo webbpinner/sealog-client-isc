@@ -14,6 +14,7 @@ import { Line } from 'rc-progress';
 import EventFilterForm from './event_filter_form';
 import ImagePreviewModal from './image_preview_modal';
 import EventCommentModal from './event_comment_modal';
+import EventPermalinkModal from './event_permalink_modal';
 import * as actions from '../actions';
 import { ROOT_PATH, API_ROOT_URL, IMAGE_PATH } from '../client_config';
 
@@ -57,7 +58,8 @@ class LoweringReplay extends Component {
     this.handlePageSelect = this.handlePageSelect.bind(this);
     this.replayAdvance = this.replayAdvance.bind(this);
     this.replayReverse = this.replayReverse.bind(this);
-    this.updateEventFilter = this.updateEventFilter.bind(this)
+    this.updateEventFilter = this.updateEventFilter.bind(this);
+    this.handleEventPermalinkUpdate = this.handleEventPermalinkUpdate.bind(this);
 
   }
 
@@ -107,7 +109,6 @@ class LoweringReplay extends Component {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        console.log(response)
         return response.data
       }).catch((error)=>{
         if(error.response.data.statusCode == 404){
@@ -123,7 +124,6 @@ class LoweringReplay extends Component {
   fetchEventsWithAuxData(format = 'json') {
 
     const cookies = new Cookies();
-    // console.log("event export update")
     format = `format=${format}`
     let startTS = (this.props.event.eventFilter.startTS)? `&startTS=${this.props.event.eventFilter.startTS}` : ''
     let stopTS = (this.props.event.eventFilter.stopTS)? `&stopTS=${this.props.event.eventFilter.stopTS}` : ''
@@ -154,7 +154,6 @@ class LoweringReplay extends Component {
   fetchEvents(format = 'json') {
 
     const cookies = new Cookies();
-    // console.log("event export update")
     format = `format=${format}`
     let startTS = (this.props.event.eventFilter.startTS)? `&startTS=${this.props.event.eventFilter.startTS}` : ''
     let stopTS = (this.props.event.eventFilter.stopTS)? `&stopTS=${this.props.event.eventFilter.stopTS}` : ''
@@ -261,8 +260,19 @@ class LoweringReplay extends Component {
     this.props.showModal('eventComment', { event: this.props.event.events[index], handleUpdateEvent: this.props.updateEvent });
   }
 
+  handleEventPermalinkModal(event) {
+    this.props.showModal('eventPermalink', { event: event, handleUpdateEvent: this.handleEventPermalinkUpdate });
+    this.props.advanceLoweringReplayTo(event.id)
+  }
+
+  async handleEventPermalinkUpdate(event_id, event_value, event_free_text, event_options, event_ts) {
+    const response = await this.props.updateEvent(event_id, event_value, event_free_text, event_options, event_ts)
+    if(response.response.status == 204) {
+      this.props.advanceLoweringReplayTo(event_id)    
+    }
+  }
+
   handlePageSelect(eventKey) {
-    // console.log("eventKey:", eventKey)
     this.handleLoweringReplayPause();
     this.setState({activePage: eventKey, replayEventIndex: (eventKey-1)*maxEventsPerPage });
     this.props.advanceLoweringReplayTo(this.props.event.events[(eventKey-1)*maxEventsPerPage].id)
@@ -572,6 +582,62 @@ class LoweringReplay extends Component {
     return null
   }
 
+  renderEventOptionsPanel() {
+
+    if(this.props.event && this.props.event.selected_event.event_options) {
+
+      let event_comment = null;
+      let event_seatube_permalink = false;
+
+      let index = -1;
+
+      const event_options = this.props.event.selected_event.event_options.reduce((event_option_array, event_option) => {
+        index++;
+
+        if (event_option.event_option_name === 'event_comment') {
+          index--;
+        }
+        else if (this.props.event.selected_event.event_value === "EDU" && event_option.event_option_name === 'seatube_permalink') {
+          event_seatube_permalink = true;
+          if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
+            event_option_array.push(( event_option.event_option_value !== '') ? (<div key={`event_option_${index}`}>{event_option.event_option_name}: <a target="_blank" href={event_option.event_option_value}>{event_option.event_option_value}</a> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.events[this.state.replayEventIndex])}>Edit</span>)<br/></div>) : (<div key={`event_option_${index}`}>{event_option.event_option_name}: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.events[this.state.replayEventIndex])}>Add</span>)<br/></div>))
+          }
+          else {
+            event_option_array.push(( event_option.event_option_value !== '') ? (<div key={`event_option_${index}`}>{event_option.event_option_name}: <a target="_blank" href={event_option.event_option_value}>{event_option.event_option_value}</a></div>) : (<div key={`event_option_${index}`}>{event_option.event_option_name}:</div>))
+          }
+        } else {
+          event_option_array.push((<div key={`event_option_${index}`}>{event_option.event_option_name}: {event_option.event_option_value}</div>))
+        }
+
+        return event_option_array
+
+      },[])
+
+      if(this.props.event.selected_event.event_value === "EDU" && !event_seatube_permalink) {
+        if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
+          event_options.push(<div key={`option_${event_options.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.events[this.state.replayEventIndex])}>Add</span>)<br/></div>)
+        }
+        else {
+          event_options.push(<div key={`option_${event_options.length}`}>seatube_permalink:</div>);
+        }
+      }
+
+      return (
+        <Col xs={12} md={6}>
+          <Panel>
+            <Panel.Heading>Event Options</Panel.Heading>
+            <Panel.Body>
+              {event_options}
+            </Panel.Body>
+        </Panel>
+        </Col>
+      )
+    }  
+
+    return null
+  }
+
+
   renderControlsPanel() {
 
     if(this.props.lowering) {
@@ -687,60 +753,53 @@ class LoweringReplay extends Component {
 
     if(this.props.event.events && this.props.event.events.length > 0){
 
-      let eventArray = []
-
-      for (let i = (this.state.activePage-1) * maxEventsPerPage; i < this.state.activePage * maxEventsPerPage; i++) {
-
-        if(i >= this.props.event.events.length)
-          break
-
-        let event = this.props.event.events[i]
+      let eventList = this.props.event.events.map((event, index) => {
+        if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
         
-        let comment_exists = false;
-        let edu_event = (event.event_value == "EDU")? true : false;
-        let seatube_exists = false;
-        let seatube_permalink = '';
-        let youtube_material = false;
+          let comment_exists = false;
+          let edu_event = (event.event_value == "EDU")? true : false;
+          let seatube_exists = false;
+          let seatube_permalink = '';
+          let youtube_material = false;
 
-        let eventOptionsArray = event.event_options.reduce((filtered, option) => {
-          if(option.event_option_name == 'event_comment') {
-            comment_exists = (option.event_option_value !== '')? true : false;
-          } else if(edu_event && option.event_option_name == 'seatube_permalink') {
-            seatube_exists = (option.event_option_value !== '')? true : false;
-            seatube_permalink = option.event_option_value;
-          } else if(edu_event && option.event_option_name == 'youtube_material') {
-            youtube_material = (option.event_option_value == 'Yes')? true : false;
-          } else {
-            filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
+          let eventOptionsArray = event.event_options.reduce((filtered, option) => {
+            if(option.event_option_name == 'event_comment') {
+              comment_exists = (option.event_option_value !== '')? true : false;
+            } else if(edu_event && option.event_option_name == 'seatube_permalink') {
+              seatube_exists = (option.event_option_value !== '')? true : false;
+              seatube_permalink = option.event_option_value;
+            } else if(edu_event && option.event_option_name == 'youtube_material') {
+              youtube_material = (option.event_option_value == 'Yes')? true : false;
+            } else {
+              filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
+            }
+            return filtered
+          },[])
+          
+          if (event.event_free_text) {
+            eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
+          } 
+
+          let active = (this.props.event.selected_event.id == event.id)? true : false
+
+          let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(i)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(i)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon icon='plus' fixedWidth inverse transform="shrink-4"/></span>
+          let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
+
+          let seatubeTooltip = null
+          let youtubeTooltip = null
+
+          if(edu_event) {
+            seatubeTooltip = (seatube_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
+            youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
           }
-          return filtered
-        },[])
-        
-        if (event.event_free_text) {
-          eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
-        } 
 
-        let active = (this.props.event.selected_event.id == event.id)? true : false
-
-        let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
-        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(i)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(i)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon icon='plus' fixedWidth inverse transform="shrink-4"/></span>
-        let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
-
-        let seatubeTooltip = null
-        let youtubeTooltip = null
-
-        if(edu_event) {
-          seatubeTooltip = (seatube_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
-          youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
+          // eventArray.push(<ListGroupItem key={event.id}><Row><Col xs={11} onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</Col><Col>{deleteTooltip} {commentTooltip} {seatubeTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>);
+          return (<ListGroupItem key={event.id} active={active} ><Row><Col xs={11} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span></Col><Col>{commentTooltip} {seatubeTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>);
         }
-
-        // eventArray.push(<ListGroupItem key={event.id}><Row><Col xs={11} onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</Col><Col>{deleteTooltip} {commentTooltip} {seatubeTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>);
-        eventArray.push(<ListGroupItem key={event.id} active={active} ><Row><Col xs={11} ><span onClick={() => this.handleEventClick(i)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span></Col><Col>{commentTooltip} {seatubeTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>);
-
-      }
-      return eventArray
+      })
+      return eventList
     }
-
     return (<ListGroupItem>No events found</ListGroupItem>)
   }
 
@@ -805,6 +864,7 @@ class LoweringReplay extends Component {
       <div>
         <ImagePreviewModal />
         <EventCommentModal />
+        <EventPermalinkModal />
         <Row>
           <Col lg={12}>
             <div>
@@ -820,6 +880,10 @@ class LoweringReplay extends Component {
         <Row>
           {this.renderAuxDataPanel()}
         </Row>
+        <Row>
+          {this.renderEventOptionsPanel()}
+        </Row>
+
         <Row>
           <Col md={9} lg={9}>
             {this.renderControlsPanel()}

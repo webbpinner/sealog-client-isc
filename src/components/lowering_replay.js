@@ -550,7 +550,6 @@ class LoweringReplay extends Component {
 
   renderAuxDataPanel() {
 
-    let return_aux_data = []
     if(this.props.event && this.props.event.selected_event.aux_data) {
       return this.props.event.selected_event.aux_data.map((aux_data, index) => {
         let return_data = aux_data.data_array.map((data, index) => {
@@ -562,7 +561,28 @@ class LoweringReplay extends Component {
               <label>{aux_data.data_source}:</label>
               <ul>
                 {return_data}
-                </ul>
+              </ul>
+            </Panel>
+          </Col>
+        )
+      })
+    }  
+
+    return null
+  }
+
+  renderEventOptionsPanel() {
+
+    if(this.props.event && this.props.event.selected_event.event_options) {
+      console.log(this.props.event.selected_event.event_options)
+      return this.props.event.selected_event.event_options.map((event_option, index) => {
+        return (
+          <Col key={`${event_option.event_option_name}`} xs={12} md={6}>
+            <Panel>
+              <label>{event_option.event_option_name}:</label>
+              <ul>
+                {event_option_value}
+              </ul>
             </Panel>
           </Col>
         )
@@ -800,6 +820,11 @@ class LoweringReplay extends Component {
         <Row>
           <Col sm={12}>
             {this.renderAuxDataPanel()}
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={12}>
+            {this.renderEventOptionsPanel()}
           </Col>
         </Row>
         <Row>
