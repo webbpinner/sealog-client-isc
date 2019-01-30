@@ -55,7 +55,7 @@ render() {
 
     return (
       <Row>
-        <Col sm={5} md={3} mdOffset={2} lg={2} lgOffset={3}>
+        <Col sm={6} md={5} mdOffset={1} lg={4} lgOffset={2}>
           <Panel className="form-signin">
             <Panel.Body>
               {loginPanelHeader}
@@ -103,9 +103,9 @@ render() {
             </Panel.Body>
           </Panel>
         </Col>
-        <Col>
+        <Col sm={6} md={5} lg={4}>
           <Image className="form-signin" responsive src={`${ROOT_PATH}images/${LOGIN_IMAGE}`}/>
-          <p>{LOGIN_SCREEN_TXT}</p>
+          <span>{LOGIN_SCREEN_TXT}</span>
         </Col>
       </Row>
     )
