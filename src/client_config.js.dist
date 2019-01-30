@@ -13,3 +13,8 @@ export const ROOT_PATH = "/sealog/";
 // Where the images are hosted on the webserver.
 export const IMAGE_PATH = "/files/images";
 export const RECAPTCHA_SITE_KEY = ""
+
+// Stuff added specifically to simplify maintaining the ISC instances
+export const MAIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting real-time scientific and/or operational observations.";
+export const LOGIN_IMAGE = "login_image.png";
+export const HEADER_TITLE = "ISC Sealog";

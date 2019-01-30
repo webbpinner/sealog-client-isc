@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { Grid, Row, Col, FormGroup, Panel, Button, Alert, Image } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
 import * as actions from '../../actions';
-import { ROOT_PATH, RECAPTCHA_SITE_KEY } from '../../client_config';
+import { ROOT_PATH, RECAPTCHA_SITE_KEY, LOGIN_IMAGE } from '../../client_config';
 
 class Login extends Component {
  
@@ -104,7 +104,7 @@ render() {
           </Panel>
         </Col>
         <Col>
-          <Image className="form-signin" responsive src={`${ROOT_PATH}images/login_image.png`}/>
+          <Image className="form-signin" responsive src={`${ROOT_PATH}images/${LOGIN_IMAGE}`}/>
         </Col>
       </Row>
     )

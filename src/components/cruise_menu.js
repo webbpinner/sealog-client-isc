@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Button, Row, Col, Panel, PanelGroup, ListGroup, ListGroupItem } from 'react-bootstrap';
 import FileDownload from 'js-file-download';
-import { API_ROOT_URL } from '../client_config';
+import { API_ROOT_URL, MAIN_SCREEN_TXT } from '../client_config';
 
 import * as actions from '../actions';
 
@@ -203,8 +203,8 @@ class CruiseMenu extends Component {
       <div>
         <Row>
           <Col xs={12}>
-            <h4>Welcome to Sealog</h4>
-            Sealog provides the NDSF user community with shore-based access to in-situ observations, still imagery, position/attitude data, and sensor data from the JASON ROV for review and analysis<br/><br/>
+            {MAIN_SCREEN_TXT}
+            <br/><br/>
           </Col>
         </Row>
         <Row>
