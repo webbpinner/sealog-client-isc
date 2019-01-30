@@ -153,14 +153,24 @@ class EventShowDetailsModal extends Component {
           event_comment = <Row><Col xs={12}><ListGroup><ListGroupItem>Comment: {option.event_option_value}</ListGroupItem></ListGroup></Col></Row>
         } else if (this.state.event.event_value === "EDU" && option.event_option_name === 'seatube_permalink') {
           event_seatube_permalink = true
-          return ( option.event_option_value !== '')? (<span key={`option_${index}`}>{option.event_option_name}: <a target="_blank" href={this.state.event.event_options[index].event_option_value}>{this.state.event.event_options[index].event_option_value}</a> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Edit</span>)<br/></span>): (<span key={`option_${index}`}>{option.event_option_name}: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+          if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
+            return ( option.event_option_value !== '')? (<span key={`option_${index}`}>{option.event_option_name}: <a target="_blank" href={this.state.event.event_options[index].event_option_value}>{this.state.event.event_options[index].event_option_value}</a> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Edit</span>)<br/></span>): (<span key={`option_${index}`}>{option.event_option_name}: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+          }
+          else {
+            return ( option.event_option_value !== '')? (<span key={`option_${index}`}>{option.event_option_name}: <a target="_blank" href={this.state.event.event_options[index].event_option_value}>{this.state.event.event_options[index].event_option_value}</a><br/></span>): (<span key={`option_${index}`}>{option.event_option_name}:<br/></span>) 
+          }
         } else {
           return (<span key={`option_${index}`}>{option.event_option_name}: {option.event_option_value}<br/></span>)
         }
       })
 
       if(this.state.event.event_value === "EDU" && !event_seatube_permalink) {
-        eventOptions.push(<span key={`option_${eventOptions.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+        if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
+          eventOptions.push(<span key={`option_${eventOptions.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+        }
+        else {
+          eventOptions.push(<span key={`option_${eventOptions.length}`}>seatube_permalink:<br/></span>) 
+        }
       }
 
       return (
