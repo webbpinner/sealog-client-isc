@@ -569,10 +569,10 @@ class LoweringReplay extends Component {
         return (
           <Col key={`${aux_data.data_source}`} xs={12} md={6}>
             <Panel>
-              <label>{aux_data.data_source}:</label>
-              <ul>
+              <Panel.Heading>{aux_data.data_source}</Panel.Heading>
+              <Panel.Body>
                 {return_data}
-                </ul>
+              </Panel.Body>
             </Panel>
           </Col>
         )
@@ -606,7 +606,7 @@ class LoweringReplay extends Component {
             event_option_array.push(( event_option.event_option_value !== '') ? (<div key={`event_option_${index}`}>{event_option.event_option_name}: <a target="_blank" href={event_option.event_option_value}>{event_option.event_option_value}</a></div>) : (<div key={`event_option_${index}`}>{event_option.event_option_name}:</div>))
           }
         } else {
-          event_option_array.push((<div key={`event_option_${index}`}>{event_option.event_option_name}: {event_option.event_option_value}</div>))
+          event_option_array.push((<div key={`event_option_${index}`}><label>{event_option.event_option_name}:</label> {event_option.event_option_value}</div>))
         }
 
         return event_option_array
@@ -615,10 +615,10 @@ class LoweringReplay extends Component {
 
       if(this.props.event.selected_event.event_value === "EDU" && !event_seatube_permalink) {
         if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
-          event_options.push(<div key={`option_${event_options.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.events[this.state.replayEventIndex])}>Add</span>)<br/></div>)
+          event_options.push(<div key={`option_${event_options.length}`}><label>seatube_permalink:</label> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.events[this.state.replayEventIndex])}>Add</span>)<br/></div>)
         }
         else {
-          event_options.push(<div key={`option_${event_options.length}`}>seatube_permalink:</div>);
+          event_options.push(<div key={`option_${event_options.length}`}><label>seatube_permalink:</label></div>);
         }
       }
 
@@ -878,10 +878,8 @@ class LoweringReplay extends Component {
           </Col>
         </Row>
         <Row>
-          {this.renderAuxDataPanel()}
-        </Row>
-        <Row>
           {this.renderEventOptionsPanel()}
+          {this.renderAuxDataPanel()}
         </Row>
 
         <Row>

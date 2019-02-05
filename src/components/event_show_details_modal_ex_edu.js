@@ -123,16 +123,14 @@ class EventShowDetailsModal extends Component {
     if(this.props.event && this.state.event.aux_data) {
       return this.state.event.aux_data.map((aux_data, index) => {
         let return_data = aux_data.data_array.map((data, index) => {
-          return (<div key={`${aux_data.data_source}_data_point_${index}`}><label>{data.data_name}:</label><span> {data.data_value} {data.data_uom}</span></div>)
+          return (<span key={`${aux_data.data_source}_data_point_${index}`}><label>{data.data_name}:</label><span> {data.data_value} {data.data_uom}</span><br/></span>)
         })
         return (
           <Col key={`${aux_data.data_source}`} xs={12} md={6}>
-            <Panel>
               <label>{aux_data.data_source}:</label>
-              <ul>
-                {return_data}
-                </ul>
-            </Panel>
+              <ListGroup>
+                <ListGroupItem>{return_data}</ListGroupItem>
+              </ListGroup>
           </Col>
         )
       })
@@ -182,7 +180,7 @@ class EventShowDetailsModal extends Component {
               <Row>
                 <Col xs={12} sm={6} md={4}>
                   <ListGroup>
-                    <ListGroupItem>Date: {`${this.state.event.ts}`}<br/>Author: {`${this.state.event.event_author}`}<br/>Value: {`${this.state.event.event_value}`}</ListGroupItem>
+                    <ListGroupItem>Date: {`${this.state.event.ts}`}<br/>Author: {`${this.state.event.event_author}`}<br/>Value: {`${this.state.event.event_value}`}<br/>{`Text: ${this.state.event.event_free_text}`}</ListGroupItem>
                   </ListGroup>
                 </Col>
                 <Col xs={12} sm={6} md={8}>
@@ -191,13 +189,6 @@ class EventShowDetailsModal extends Component {
                     <ListGroupItem>{eventOptions}</ListGroupItem>
                   </ListGroup>
                   : null }
-                </Col>
-              </Row>
-              <Row>
-                <Col xs={12}>
-                  <ListGroup>
-                    <ListGroupItem>{`Text: ${this.state.event.event_free_text}`}</ListGroupItem>
-                  </ListGroup>
                 </Col>
               </Row>
               {event_comment}
