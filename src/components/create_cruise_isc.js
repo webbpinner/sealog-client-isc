@@ -155,8 +155,6 @@ class CreateCruise extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const createCruiseFormHeader = (<div>Create New Cruise</div>);
 
-    console.log("MTU:", MTU)
-
     const vessel_name = ( MTU )? (
       <Field
         name="vessel_name"
