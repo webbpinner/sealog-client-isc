@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, Field, initialize, reset } from 'redux-form';
 import { Alert, Button, Checkbox, Radio, Col, FormGroup, FormControl, FormGroupItem, Grid, Panel, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { MTU } from '../client_config';
 import * as actions from '../actions';
 
 const dateFormat = "YYYY-MM-DD"
@@ -17,6 +18,26 @@ class CreateCruise extends Component {
   handleFormSubmit(formProps) {
     formProps.cruise_participants = (formProps.cruise_participants)? formProps.cruise_participants.map(participant => participant.trim()): [];
     formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
+
+    if( MTU ) {
+      formProps.cruise_additional_meta = {}
+
+      if (formProps.mtu_id) {
+        formProps.cruise_additional_meta.mtu_id = formProps.mtu_id
+        delete formProps.mtu_id
+      }
+
+      if (formProps.vessel_name) {
+        formProps.cruise_additional_meta.vessel_name = formProps.vessel_name
+        delete formProps.vessel_name
+      }
+
+      if (formProps.project_description) {
+        formProps.cruise_additional_meta.project_description = formProps.project_description
+        delete formProps.project_description
+      }
+    }
+
     this.props.createCruise(formProps);
   }
 
@@ -134,6 +155,39 @@ class CreateCruise extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const createCruiseFormHeader = (<div>Create New Cruise</div>);
 
+    console.log("MTU:", MTU)
+
+    const vessel_name = ( MTU )? (
+      <Field
+        name="vessel_name"
+        type="text"
+        component={this.renderField}
+        label="Vessel Name"
+        placeholder="i.e. R/V Endeavor"
+      />
+    ) : null
+
+    const mtu_id = ( MTU )? (
+      <Field
+        name="mtu_id"
+        type="text"
+        component={this.renderField}
+        label="MTU ID"
+        placeholder="i.e. MTU01 v2"
+      />
+    ) : null
+
+    const project_description = ( MTU )? (
+      <Field
+        name="project_description"
+        component={this.renderTextArea}
+        type="textarea"
+        label="Project Description"
+        placeholder="A brief summary of the project"
+        rows={10}
+      />
+    ) : null
+
     if (this.props.roles) {
 
       if(this.props.roles.includes("admin")) {
@@ -174,6 +228,9 @@ class CreateCruise extends Component {
                   label="Cruise Location"
                   placeholder="i.e. Lost City"
                 />
+                {mtu_id}
+                {vessel_name}
+                {project_description}
                 <Field
                   name="start_ts"
                   component={this.renderDatePicker}

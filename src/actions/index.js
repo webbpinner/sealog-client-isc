@@ -447,10 +447,10 @@ export function createUser({username, fullname, password = '', email, roles, sys
   }
 }
 
-export function createCruise({cruise_id, cruise_name, start_ts, stop_ts, cruise_description = '', cruise_location = '', cruise_pi, cruise_participants = [], cruise_tags = [], cruise_hidden = false, cruise_access_list = []}) {
+export function createCruise({cruise_id, cruise_name, start_ts, stop_ts, cruise_description = '', cruise_location = '', cruise_pi, cruise_participants = [], cruise_tags = [], cruise_hidden = false, cruise_access_list = [], cruise_additional_meta = {}}) {
   return function (dispatch) {
     axios.post(`${API_ROOT_URL}/api/v1/cruises`,
-    {cruise_id, cruise_name, start_ts, stop_ts, cruise_description, cruise_location, cruise_pi, cruise_participants, cruise_tags, cruise_hidden, cruise_access_list},
+    {cruise_id, cruise_name, start_ts, stop_ts, cruise_description, cruise_location, cruise_pi, cruise_participants, cruise_tags, cruise_hidden, cruise_access_list, cruise_additional_meta},
     {
       headers: {
         authorization: cookies.get('token'),
@@ -677,6 +677,10 @@ export function updateCruise(formProps) {
 
   if(formProps.cruise_access_list) {
     fields.cruise_access_list = formProps.cruise_access_list;
+  }
+
+  if(formProps.cruise_additional_meta) {
+    fields.cruise_additional_meta = formProps.cruise_additional_meta;
   }
 
   return async function (dispatch) {
