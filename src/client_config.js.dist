@@ -19,4 +19,8 @@ export const LOGIN_SCREEN_TXT = "";
 export const MAIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting real-time scientific and/or operational observations.";
 export const LOGIN_IMAGE = "login_image.png";
 export const HEADER_TITLE = "ISC Sealog";
+
+// Setting this to 'true' will configure the client to include the additional
+// metadata fields for the cruise records such as the MTU number, hardware
+// version and vessel name
 export const MTU = false

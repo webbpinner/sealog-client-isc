@@ -447,7 +447,7 @@ export function createUser({username, fullname, password = '', email, roles, sys
   }
 }
 
-export function createCruise({cruise_id, cruise_name, start_ts, stop_ts, cruise_description = '', cruise_location = '', cruise_pi, cruise_participants = [], cruise_tags = [], cruise_hidden = false, cruise_access_list = [], cruise_additional_meta = {}}) {
+export function createCruise({cruise_id, cruise_name, start_ts, stop_ts, cruise_description = '', cruise_location = '', cruise_pi, cruise_participants = [], cruise_tags = [], cruise_hidden = false, cruise_access_list = [], cruise_additional_meta = {} }) {
   return function (dispatch) {
     axios.post(`${API_ROOT_URL}/api/v1/cruises`,
     {cruise_id, cruise_name, start_ts, stop_ts, cruise_description, cruise_location, cruise_pi, cruise_participants, cruise_tags, cruise_hidden, cruise_access_list, cruise_additional_meta},
@@ -469,10 +469,10 @@ export function createCruise({cruise_id, cruise_name, start_ts, stop_ts, cruise_
   }
 }
 
-export function createLowering({lowering_id, lowering_name, start_ts, stop_ts, lowering_description = '', lowering_location = '', lowering_tags = [], lowering_hidden = false, lowering_access_list = []}) {
+export function createLowering({lowering_id, lowering_name, start_ts, stop_ts, lowering_description = '', lowering_location = '', lowering_tags = [], lowering_hidden = false, lowering_access_list = [], lowering_additional_meta = {} }) {
   return function (dispatch) {
     axios.post(`${API_ROOT_URL}/api/v1/lowerings`,
-    {lowering_id, lowering_name, start_ts, stop_ts, lowering_description, lowering_location, lowering_tags, lowering_hidden, lowering_access_list},
+    {lowering_id, lowering_name, start_ts, stop_ts, lowering_description, lowering_location, lowering_tags, lowering_hidden, lowering_access_list, lowering_additional_meta},
     {
       headers: {
         authorization: cookies.get('token'),
