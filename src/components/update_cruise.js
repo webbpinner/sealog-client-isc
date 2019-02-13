@@ -13,7 +13,7 @@ import FileDownload from 'js-file-download';
 import { FilePond, File, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 
-import { API_ROOT_URL } from '../client_config';
+import { API_ROOT_URL, MTU } from '../client_config';
 import * as actions from '../actions';
 
 const dateFormat = "YYYY-MM-DD"
@@ -47,10 +47,47 @@ class UpdateCruise extends Component {
   }
 
   handleFormSubmit(formProps) {
-    formProps.cruise_participants = (formProps.cruise_participants)? formProps.cruise_participants.map(participant => participant.trim()): [];
     formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
 
-    this.props.updateCruise({...formProps, cruise_files: this.pond.getFiles().map(file => file.serverId)});
+    formProps.cruise_additional_meta = {}
+
+    if(formProps.cruise_participants) {
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_participants.map(participant => participant.trim())
+      delete formProps.cruise_participants
+    }
+
+    if(formProps.cruise_name) {
+      formProps.cruise_additional_meta.cruise_name = formProps.cruise_name
+      delete formProps.cruise_name
+    }
+
+    if(formProps.cruise_description) {
+      formProps.cruise_additional_meta.cruise_description = formProps.cruise_description
+      delete formProps.cruise_description
+    }
+
+    formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
+
+    if( MTU ) {
+
+      if (formProps.mtu_id) {
+        formProps.cruise_additional_meta.mtu_id = formProps.mtu_id
+        delete formProps.mtu_id
+      }
+
+      if (formProps.vessel_name) {
+        formProps.cruise_additional_meta.vessel_name = formProps.vessel_name
+        delete formProps.vessel_name
+      }
+
+      if (formProps.project_description) {
+        formProps.cruise_additional_meta.project_description = formProps.project_description
+        delete formProps.project_description
+      }
+    }
+
+
+    this.props.updateCruise({...formProps });
     this.pond.removeFiles();
     this.props.handleFormSubmit()
   }
@@ -176,8 +213,8 @@ class UpdateCruise extends Component {
   }
 
   renderFiles() {
-    if(this.props.cruise.cruise_files && this.props.cruise.cruise_files.length > 0) {
-      let files = this.props.cruise.cruise_files.map((file, index) => {
+    if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files && this.props.cruise.cruise_additional_meta.cruise_files.length > 0) {
+      let files = this.props.cruise.cruise_additional_meta.cruise_files.map((file, index) => {
         return <li style={{ listStyleType: "none" }} key={`file_${index}`}><span onClick={() => this.handleFileDownload(this.props.cruise.id, file)}><FontAwesomeIcon className='text-primary' icon='download' fixedWidth /></span> <span onClick={() => this.handleFileDelete(this.props.cruise.id, file)}><FontAwesomeIcon className='text-danger' icon='trash' fixedWidth /></span><span> {file}</span></li>
       })
       return <div>{files}<br/></div>
@@ -209,6 +246,37 @@ class UpdateCruise extends Component {
 
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const updateCruiseFormHeader = (<div>Update Cruise</div>);
+
+    const vessel_name = ( MTU )? (
+      <Field
+        name="vessel_name"
+        type="text"
+        component={this.renderField}
+        label="Vessel Name"
+        placeholder="i.e. R/V Endeavor"
+      />
+    ) : null
+
+    const mtu_id = ( MTU )? (
+      <Field
+        name="mtu_id"
+        type="text"
+        component={this.renderField}
+        label="MTU ID"
+        placeholder="i.e. MTU01 v2"
+      />
+    ) : null
+
+    const project_description = ( MTU )? (
+      <Field
+        name="project_description"
+        component={this.renderTextArea}
+        type="textarea"
+        label="Project Description"
+        placeholder="A brief summary of the project"
+        rows={10}
+      />
+    ) : null
 
     if (this.props.roles && (this.props.roles.includes("admin") || this.props.roles.includes('cruise_manager'))) {
 
@@ -248,6 +316,9 @@ class UpdateCruise extends Component {
                 label="Full Location"
                 placeholder="i.e. Lost City"
               />
+              {mtu_id}
+              {vessel_name}
+              {project_description}
               <Field
                 name="start_ts"
                 component={this.renderDatePicker}
@@ -268,13 +339,6 @@ class UpdateCruise extends Component {
                 type="text"
                 label="Primary Investigator"
                 placeholder="i.e. Dr. Susan Lang"
-              />
-              <Field
-                name="cruise_participants"
-                component={this.renderTextArea}
-                type="textarea"
-                label="Cruise Participants, comma delimited"
-                placeholder="A comma-delimited list of names, i.e. Dave Butterfield,Sharon Walker"
               />
               <Field
                 name="cruise_tags"
@@ -369,11 +433,39 @@ function validate(formProps) {
 }
 
 function mapStateToProps(state) {
+  let initialValues = state.cruise.cruise
+
+
+  if (initialValues.cruise_additional_meta) {
+    if (initialValues.cruise_additional_meta.cruise_name) {
+      initialValues.cruise_name = initialValues.cruise_additional_meta.cruise_name
+    }
+
+    if (initialValues.cruise_additional_meta.cruise_description) {
+      initialValues.cruise_description = initialValues.cruise_additional_meta.cruise_description
+    }
+
+    if ( MTU ) {
+      if (initialValues.cruise_additional_meta.mtu_id) {
+        initialValues.mtu_id = initialValues.cruise_additional_meta.mtu_id
+      }
+
+      if (initialValues.cruise_additional_meta.vessel_name) {
+        initialValues.vessel_name = initialValues.cruise_additional_meta.vessel_name
+      }
+
+      if (initialValues.cruise_additional_meta.project_description) {
+        initialValues.project_description = initialValues.cruise_additional_meta.project_description
+      }
+    }
+
+    delete initialValues.cruise_additional_meta
+  }
 
   return {
     errorMessage: state.cruise.cruise_error,
     message: state.cruise.cruise_message,
-    initialValues: state.cruise.cruise,
+    initialValues: initialValues,
     cruise: state.cruise.cruise,
     roles: state.user.profile.roles
   };

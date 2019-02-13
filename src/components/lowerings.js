@@ -123,10 +123,12 @@ class Lowerings extends Component {
 
         let accessLoweringLink = (this.props.roles.includes('admin'))? <Link key={`access_${lowering.id}`} to="#" onClick={ () => this.handleLoweringAccess(lowering.id) }><OverlayTrigger placement="top" overlay={userAccessTooltip}><FontAwesomeIcon icon='user' fixedWidth/></OverlayTrigger></Link>: null
 
+        let loweringLocation = (lowering.lowering_location)? <span>Location: {lowering.lowering_location}<br/></span> : null
+
         return (
           <tr key={lowering.id}>
             <td>{lowering.lowering_id}</td>
-            <td>{lowering.lowering_location}<br/>Dates: {moment.utc(lowering.start_ts).format("MM-DD-YYYY HH:mm")}<FontAwesomeIcon icon='arrow-right' fixedWidth/>{moment.utc(lowering.stop_ts).format("MM-DD-YYYY HH:mm")}</td>
+            <td>{loweringLocation}Dates: {moment.utc(lowering.start_ts).format("MM-DD-YYYY HH:mm")}<FontAwesomeIcon icon='arrow-right' fixedWidth/>{moment.utc(lowering.stop_ts).format("MM-DD-YYYY HH:mm")}</td>
             <td>
               <Link key={`edit_${lowering.id}`} to="#" onClick={ () => this.handleLoweringUpdate(lowering.id) }><OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon icon='pencil-alt' fixedWidth/></OverlayTrigger></Link>
               {deleteLink}

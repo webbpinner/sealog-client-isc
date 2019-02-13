@@ -6,11 +6,12 @@ import { reduxForm, Field, reset } from 'redux-form';
 import { FormGroup, Row, Button, Col, Panel, Alert, Table, OverlayTrigger, Tooltip, Pagination } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import moment from 'moment';
-import CreateCruise from './create_cruise_isc';
-import UpdateCruise from './update_cruise_isc';
+import CreateCruise from './create_cruise';
+import UpdateCruise from './update_cruise';
 import AccessCruise from './access_cruise';
 import DeleteCruiseModal from './delete_cruise_modal';
 import ImportCruisesModal from './import_cruises_modal';
+import { MTU } from '../client_config';
 import * as actions from '../actions';
 
 let fileDownload = require('js-file-download');
@@ -124,10 +125,22 @@ class Cruises extends Component {
 
         let accessCruiseLink = (this.props.roles.includes('admin'))? <Link key={`access_${cruise.id}`} to="#" onClick={ () => this.handleCruiseAccess(cruise.id) }><OverlayTrigger placement="top" overlay={userAccessTooltip}><FontAwesomeIcon icon='user' fixedWidth/></OverlayTrigger></Link>: null
 
+        let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span>Name: {cruise.cruise_additional_meta.cruise_name}<br/></span> : null
+        let cruiseLocation = (cruise.cruise_location)? <span>Location: {cruise.cruise_location}<br/></span> : null
+        let cruisePi = (cruise.cruise_pi)? <span>PI: {cruise.cruise_pi}<br/></span> : null
+
+        let mtuData = null
+        if(MTU) {
+          let projectDescription = (cruise.cruise_additional_meta.project_description)? <p><strong>Project Description:</strong> {cruise.cruise_additional_meta.project_description}</p> : null
+          let vesselName = (cruise.cruise_additional_meta.vessel_name)? <p><strong>Vessel Name:</strong> {cruise.cruise_additional_meta.vessel_name}</p> : null
+          let mtuID = (cruise.cruise_additional_meta.mtu_id)? <p><strong>MTU ID:</strong> {cruise.cruise_additional_meta.mtu_id}</p> : null
+          mtuData = (<span>{projectDescription}{vesselName}{mtuID}</span>)        
+        }
+
         return (
           <tr key={cruise.id}>
             <td>{cruise.cruise_id}</td>
-            <td>{cruise.cruise_name}<br/>PI: {cruise.cruise_pi}<br/>Dates: {moment.utc(cruise.start_ts).format('L')}<FontAwesomeIcon icon='arrow-right' fixedWidth/>{moment.utc(cruise.stop_ts).format('L')}</td>
+            <td>{cruiseName}{cruiseLocation}{cruisePi}{mtuData}Dates: {moment.utc(cruise.start_ts).format('L')}<FontAwesomeIcon icon='arrow-right' fixedWidth/>{moment.utc(cruise.stop_ts).format('L')}</td>
             <td>
               <Link key={`edit_${cruise.id}`} to="#" onClick={ () => this.handleCruiseUpdate(cruise.id) }><OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon icon='pencil-alt' fixedWidth/></OverlayTrigger></Link>
               {deleteLink}

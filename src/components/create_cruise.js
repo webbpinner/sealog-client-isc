@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, Field, initialize, reset } from 'redux-form';
 import { Alert, Button, Checkbox, Radio, Col, FormGroup, FormControl, FormGroupItem, Grid, Panel, Row, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { MTU } from '../client_config'
 import * as actions from '../actions';
 
 const dateFormat = "YYYY-MM-DD"
@@ -15,8 +16,44 @@ class CreateCruise extends Component {
   }
 
   handleFormSubmit(formProps) {
-    formProps.cruise_participants = (formProps.cruise_participants)? formProps.cruise_participants.map(participant => participant.trim()): [];
+
     formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
+
+    formProps.cruise_additional_meta = {}
+
+    if(formProps.cruise_participants) {
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_participants.map(participant => participant.trim())
+      delete formProps.cruise_participants
+    }
+
+    if(formProps.cruise_name) {
+      formProps.cruise_additional_meta.cruise_name = formProps.cruise_name
+      delete formProps.cruise_name
+    }
+
+    if(formProps.cruise_description) {
+      formProps.cruise_additional_meta.cruise_description = formProps.cruise_description
+      delete formProps.cruise_description
+    }
+
+    if( MTU ) {
+      if (formProps.mtu_id) {
+        formProps.cruise_additional_meta.mtu_id = formProps.mtu_id
+        delete formProps.mtu_id
+      }
+
+      if (formProps.vessel_name) {
+        formProps.cruise_additional_meta.vessel_name = formProps.vessel_name
+        delete formProps.vessel_name
+      }
+
+      if (formProps.project_description) {
+        formProps.cruise_additional_meta.project_description = formProps.project_description
+        delete formProps.project_description
+      }
+    }
+
+
     this.props.createCruise(formProps);
   }
 
@@ -134,6 +171,37 @@ class CreateCruise extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const createCruiseFormHeader = (<div>Create New Cruise</div>);
 
+    const vessel_name = ( MTU )? (
+      <Field
+        name="vessel_name"
+        type="text"
+        component={this.renderField}
+        label="Vessel Name"
+        placeholder="i.e. R/V Endeavor"
+      />
+    ) : null
+
+    const mtu_id = ( MTU )? (
+      <Field
+        name="mtu_id"
+        type="text"
+        component={this.renderField}
+        label="MTU ID"
+        placeholder="i.e. MTU01 v2"
+      />
+    ) : null
+
+    const project_description = ( MTU )? (
+      <Field
+        name="project_description"
+        component={this.renderTextArea}
+        type="textarea"
+        label="Project Description"
+        placeholder="A brief summary of the project"
+        rows={10}
+      />
+    ) : null
+
     if (this.props.roles) {
 
       if(this.props.roles.includes("admin")) {
@@ -157,7 +225,6 @@ class CreateCruise extends Component {
                   component={this.renderField}
                   label="Cruise Name"
                   placeholder="i.e. Lost City 2018"
-                  required={true}
                 />
                 <Field
                   name="cruise_description"
@@ -174,6 +241,9 @@ class CreateCruise extends Component {
                   label="Cruise Location"
                   placeholder="i.e. Lost City"
                 />
+                {mtu_id}
+                {vessel_name}
+                {project_description}
                 <Field
                   name="start_ts"
                   component={this.renderDatePicker}
@@ -195,13 +265,6 @@ class CreateCruise extends Component {
                   label="Primary Investigator"
                   placeholder="i.e. Dr. Susan Lang"
                   required={true}
-                />
-                <Field
-                  name="cruise_participants"
-                  component={this.renderTextArea}
-                  type="textarea"
-                  label="Cruise Participants, comma delimited"
-                  placeholder="A comma-delimited list of names, i.e. Dave Butterfield,Sharon Walker"
                 />
                 <Field
                   name="cruise_tags"
@@ -242,10 +305,6 @@ function validate(formProps) {
     errors.cruise_id = 'Must be 15 characters or less'
   }
 
-  if (!formProps.cruise_name) {
-    errors.cruise_name = 'Required'
-  }
-
   if (!formProps.cruise_pi) {
     errors.cruise_pi = 'Required'
   }
@@ -269,14 +328,6 @@ function validate(formProps) {
       formProps.cruise_tags = []
     } else {
       formProps.cruise_tags = formProps.cruise_tags.split(',');
-    }
-  }
-
-  if (typeof formProps.cruise_participants == "string") {
-    if (formProps.cruise_participants == '') {
-      formProps.cruise_participants = []
-    } else {
-      formProps.cruise_participants = formProps.cruise_participants.split(',');
     }
   }
 
