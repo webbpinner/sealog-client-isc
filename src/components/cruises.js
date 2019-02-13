@@ -81,7 +81,7 @@ class Cruises extends Component {
   }
 
   exportCruisesToJSON() {
-    fileDownload(JSON.stringify(this.props.cruises, null, "\t"), 'seaplay_cruisesExport.json');
+    fileDownload(JSON.stringify(this.props.cruises, null, "\t"), 'sealog_cruisesExport.json');
   }
 
   renderAddCruiseButton() {

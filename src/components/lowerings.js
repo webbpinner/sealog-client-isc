@@ -79,7 +79,7 @@ class Lowerings extends Component {
   }
 
   exportLoweringsToJSON() {
-    fileDownload(JSON.stringify(this.props.lowerings, null, 2), 'seaplay_loweringExport.json');
+    fileDownload(JSON.stringify(this.props.lowerings, null, 2), 'sealog_loweringExport.json');
   }
 
   renderAddLoweringButton() {
