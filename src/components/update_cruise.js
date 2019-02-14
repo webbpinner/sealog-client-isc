@@ -433,8 +433,8 @@ function validate(formProps) {
 }
 
 function mapStateToProps(state) {
-  let initialValues = state.cruise.cruise
-
+  
+  let initialValues = { ...state.cruise.cruise }
 
   if (initialValues.cruise_additional_meta) {
     if (initialValues.cruise_additional_meta.cruise_name) {
