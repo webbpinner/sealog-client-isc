@@ -21,13 +21,13 @@ export const RECAPTCHA_SITE_KEY = ""
 export const LOGIN_SCREEN_TXT = "";
 
 // Image file shown on the login page.  This image needs to be saved in the ./dist/images folder
-export const LOGIN_IMAGE = "";
+export const LOGIN_IMAGE = "login_image.png";
 
 // Text show on the main page above the cruise list.
 export const MAIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting real-time scientific and/or operational observations.";
 
 // Title displayed on the left side of the title bar
-export const HEADER_TITLE = "Sealog";
+export const HEADER_TITLE = "ISC Sealog";
 
 
 // ISC Specific Customization

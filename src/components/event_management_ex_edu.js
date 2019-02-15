@@ -264,8 +264,9 @@ class EventManagement extends Component {
     })
   }
 
-  toggleASNAP() {
-    this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}))
+  async toggleASNAP() {
+    await this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}))
+    this.fetchEventsForDisplay();
   }
 
   renderEventListHeader() {
@@ -416,8 +417,6 @@ class EventManagement extends Component {
   }
 
   render(){
-
-    // console.log(this.props.event.eventFilter)
 
     return (
       <div>

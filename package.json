@@ -1,6 +1,6 @@
 {
   "name": "sealog-client-isc",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "GPLv3",
   "description": "Sealog event-logging client built to run with sealog-server-jason-shoreside and customized for use at the URI ISC",
   "bugs": {
