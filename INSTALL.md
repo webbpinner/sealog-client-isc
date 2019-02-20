@@ -99,11 +99,10 @@ If the client is to be hosted at the root of the webserver you will not need to 
 
 Create a symbolic link from the repository to the apache document root.
 ```
-sudo ln -s <full_path_to>/sealog-client-isc/dist /var/www/html/sealog
+sudo ln -s /home/isc/sealog-client-isc/dist /var/www/html/sealog
 ```
- - Replace `<full_path_to>` with the appropriate path i.e. `/home/isc`
 
-You will need to tweak this configuration to match your exact installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-jason-shoreside`
+You will need to tweak this configuration to match your exact installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/isc/sealog-client-isc`
 
 **Be sure to reload Apache for these changes to take affect.**
 
@@ -114,6 +113,6 @@ Optionally you can run the client using node's development web-server.  This rem
 
 To run the client using development mode run the following commands in terminal:
 ```
-cd /home/sealog/sealog-client-jason-shoreside
+cd ~/sealog-client-isc
 npm start
 ```
