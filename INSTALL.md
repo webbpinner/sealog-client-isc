@@ -97,10 +97,11 @@ Add the following to your Apache default vhost file `/etc/apache2/sites-availabl
 
 If the client is to be hosted at the root of the webserver you will not need to add this code block but instead will need to set the `DocumentRoot` to `/var/www/html/sealog`
 
-Create a symbolic link from the repository to the apache document root
+Create a symbolic link from the repository to the apache document root.
 ```
-sudo ln -s /home/sealog/sealog-client-isc/dist /var/www/html/sealog
+sudo ln -s <full_path_to>/sealog-client-isc/dist /var/www/html/sealog
 ```
+ - Replace `<full_path_to>` with the appropriate path i.e. `/home/isc`
 
 You will need to tweak this configuration to match your exact installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-jason-shoreside`
 
