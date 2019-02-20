@@ -39,7 +39,24 @@ cp ./src/client_config.js.dist ./src/client_config.js
 
 Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, `IMAGES_PATH` and `RECAPTCHA_SITE_KEY` values in the `./sealog-client/src/client_config.js` file to meet your specific installation requirements.
 
-By default the file assumes the sealog-server is available on ports 8000 on the same server that is hosting the sealog-server.  The default configuration file also assumes the client will be available at `http://<serverIP>/sealog` This is set with the `ROOT_PATH` variable (notice there is a starting `/` **AND** trailing `/`). If you want the webclient available at: `http://<serverIP>` you need to set `ROOT_PATH` to `/`.
+By default the file assumes the sealog-server is available via http on port 8000 on the same server that is hosting the sealog-server.  If the sealog-server is run from a different server you will need to update the `API_ROOT_URL` and `WS_ROOT_URL` variables accordingly.
+
+By default configuration file also assumes the client will be available at `http://<serverIP>/sealog` This is set with the `ROOT_PATH` variable (notice there is a starting `/` **AND** trailing `/`). If you want the webclient available at: `http://<serverIP>` you need to set `ROOT_PATH` to `/`.
+
+For almost all cases the default `IMAGE_PATH` is correct.
+
+The `RECAPTCHA_SITE_KEY` must be first setup via Google's admin console.  This key is needed to implement the reCaptcha bot prevention mechanisms.
+
+`LOGIN_SCREEN_TXT` is the text displayed on the login page below the login image (if present).
+
+`LOGIN_IMAGE` is the image displayed on the login page to the right of the login form.  The actual image file should be placed in the ./dist/images folder within the sealog-client-isc repository
+
+`MAIN_SCREEN_TXT` is the text displayed at the top of the main page.
+
+`HEADER_TITLE` is the text displayed on the left-side of the top navigation bar.
+
+**Special Note for MTU Installations**
+There is a `MTU` variable used to indicated whether the installation is for an MTU or not.  If this installation is for an MTU you will need to set this variable to `true`.
 
 ### Create a deployment file
 
