@@ -7,10 +7,10 @@
  - [npm](https://www.npmjs.com)
  - [git](https://git-scm.com)
  
-#### Installing NodeJS/npm on Ubuntu 16.04LTS
-The standard Ubuntu repositories for Ubuntu 16.04 only provide install packages for NodeJS v4.  Sealog-client-jason-shoreside (and Sealog-Server-Jason-Shoreside) require nodeJS >= v8.11
+#### Installing NodeJS/npm on Ubuntu 18.04LTS
+The standard Ubuntu repositories for Ubuntu 18.04 only provide install packages for NodeJS v4.  Sealog-client-jason-shoreside (and Sealog-Server-Jason-Shoreside) require nodeJS >= v8.11
  
-To install nodeJS v8.11 on Ubuntu 16.04LTS run the following commands:
+To install nodeJS v8.11 on Ubuntu 18.04LTS run the following commands:
  ```
 sudo apt-get install curl build-essential
 cd ~
@@ -23,15 +23,15 @@ sudo apt-get install nodejs
 ### Clone the repository
 
 ```
-git clone https://github.com/webbpinner/sealog-client-jason-shoreside.git
+git clone https://github.com/webbpinner/sealog-client-isc.git
 ```
 
-This should clone the repo to a directory called `sealog-client-jason-shoreside`
+This should clone the repo to a directory called `sealog-client-isc`
 
 ### Create a new configuration file
 
 ```
-cd ~/sealog-client-jason-shoreside
+cd ~/sealog-client-isc
 cp ./src/client_config.js.dist ./src/client_config.js
 ```
 
@@ -39,22 +39,22 @@ cp ./src/client_config.js.dist ./src/client_config.js
 
 Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, `IMAGES_PATH` and `RECAPTCHA_SITE_KEY` values in the `./sealog-client/src/client_config.js` file to meet your specific installation requirements.
 
-By default the file assumes the sealog-server is available on ports 8000/8001 on the same server that is hosting the sealog-server.  The default configuration file also assumes the client will be available from the root of the webserver.  If you want the webclient available at: `http://<serverIP>/sealog` you need to set `ROOT_PATH` to `/sealog/` (notice there is a starting `/` **AND** trailing `/`).
+By default the file assumes the sealog-server is available on ports 8000 on the same server that is hosting the sealog-server.  The default configuration file also assumes the client will be available at `http://<serverIP>/sealog` This is set with the `ROOT_PATH` variable (notice there is a starting `/` **AND** trailing `/`). If you want the webclient available at: `http://<serverIP>` you need to set `ROOT_PATH` to `/`.
 
 ### Create a deployment file
 
 ```
-cd ~/sealog-client-jason-shoreside
+cd ~/sealog-client-isc
 cp ./webpack.config.js.dist ./webpack.config.js
 ```
 
-If you are deploying the client to somewhere other than `http://<serverIP>/sealog` you need to set `ROOT_PATH` to the new location. (notice there is a starting `/` **AND** trailing `/`).
+If you are deploying the client to somewhere other than `http://<serverIP>/sealog` you need to set `ROOT_PATH` to the new location. (notice there is a starting `/` **AND** trailing `/`).  In most cases the `ROOT_PATH` in this deployment file should match the `ROOT_PATH` variable in the `client_config.js`.
 
 ### Install the nodeJS modules
 
 From a terminal run:
 ```
-cd ~/sealog-client-jason-shoreside
+cd ~/sealog-client-isc
 npm install
 ```
 
@@ -63,13 +63,13 @@ npm install
 From a terminal run:
 
 ```
-cd ~/sealog-client-jason-shoreside
+cd ~/sealog-client-isc
 npm run build
 ```
 
 ### Configure Apache to host the client
 
-Add the following to your Apache vhosts file:
+Add the following to your Apache default vhost file `/etc/apache2/sites-available/000-default.conf`:
 
 ```
   Alias /sealog /var/www/html/sealog
@@ -78,14 +78,18 @@ Add the following to your Apache vhosts file:
   </Directory>
 ```
 
+If the client is to be hosted at the root of the webserver you will not need to add this code block but instead will need to set the `DocumentRoot` to `/var/www/html/sealog`
+
 Create a symbolic link from the repository to the apache document root
 ```
-sudo ln -s /home/sealog/sealog-client-jason-shoreside/dist /var/www/html/sealog
+sudo ln -s /home/sealog/sealog-client-isc/dist /var/www/html/sealog
 ```
 
 You will need to tweak this configuration to match your exact installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-jason-shoreside`
 
 **Be sure to reload Apache for these changes to take affect.**
+
+The client should now be available at: `http://<serverIP>/sealog`
 
 ### Running in development mode ###
 Optionally you can run the client using node's development web-server.  This removes the need to run Apache.  When run in development mode the client is only accessable from the local machine.
