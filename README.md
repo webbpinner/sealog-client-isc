@@ -8,7 +8,7 @@ For installation instruction please look at [INSTALL.md](./INSTALL.md)
 - admin account for demo: admin:isc.Passw0rd
 - guest account for demo: guest:guest
 
-**sealog-client-isc** is based off [sealog-client](https://github.com/webbpinner/sealog-client-jason-shoreside)
+**sealog-client-isc** is based off [sealog-client-jason-shoreside](https://github.com/webbpinner/sealog-client-jason-shoreside)
 
 # Current Users
 Sealog-Client-ISC is currently in-use at the URI ISC in support of the E/V Nauilus and NOAA Ship Okeanos Explorer.
