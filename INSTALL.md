@@ -37,7 +37,7 @@ cp ./src/client_config.js.dist ./src/client_config.js
 
 ### Modify the configuration file
 
-Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, `IMAGES_PATH` and `RECAPTCHA_SITE_KEY` values in the `./sealog-client/src/client_config.js` file to meet your specific installation requirements.
+Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, `IMAGES_PATH` and `RECAPTCHA_SITE_KEY` values in the `./src/client_config.js` file to meet your specific installation requirements.
 
 By default the file assumes the sealog-server is available via http on port 8000 on the same server that is hosting the sealog-server.  If the sealog-server is run from a different server you will need to update the `API_ROOT_URL` and `WS_ROOT_URL` variables accordingly.
 
