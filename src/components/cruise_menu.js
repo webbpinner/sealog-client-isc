@@ -64,7 +64,7 @@ class CruiseMenu extends Component {
       headers: {
         authorization: cookies.get('token')
       },
-      responseType: 'stream'
+      responseType: 'arraybuffer'
     })
     .then((response) => {
       // const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -88,7 +88,7 @@ class CruiseMenu extends Component {
       headers: {
         authorization: cookies.get('token')
       },
-      responseType: 'stream'
+      responseType: 'arraybuffer'
 
     })
     .then((response) => {
