@@ -59,21 +59,21 @@ class EventShowDetailsModal extends Component {
     }
   }
 
-  // handleMissingImage(ev) {
-  //   ev.target.src = `${ROOT_PATH}images/noimage.jpeg`
-  // }
+  handleMissingImage(ev) {
+    ev.target.src = `${ROOT_PATH}images/noimage.jpeg`
+  }
 
   // handleImagePreviewModal(source, filepath) {
   //   this.props.showModal('imagePreview', { name: source, filepath: filepath })
   // }
 
-  // renderImage(source, filepath) {
-  //   return (
-  //     <Thumbnail onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)}>
-  //       <div>{`${source}`}</div>
-  //     </Thumbnail>
-  //   )
-  // }
+  renderImage(source, filepath) {
+    return (
+      <Thumbnail onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)}>
+        <div>{`${source}`}</div>
+      </Thumbnail>
+    )
+  }
 
   handleEventPermalinkModal() {
     this.props.showModal('eventPermalink', { event: this.state.event, handleUpdateEvent: this.handleEventUpdate });
@@ -89,33 +89,33 @@ class EventShowDetailsModal extends Component {
     }
   }
 
-  // renderImagerPanel() {
-  //   if(this.props.event && this.state.event.aux_data) { 
-  //     let frameGrabberData = this.state.event.aux_data.filter(aux_data => aux_data.data_source == 'framegrabber')
-  //     let tmpData = []
+  renderImagerPanel() {
+    if(this.props.event && this.state.event.aux_data) { 
+      let frameGrabberData = this.state.event.aux_data.filter(aux_data => aux_data.data_source == 'framegrabber')
+      let tmpData = []
 
-  //     if(frameGrabberData.length > 0) {
-  //       for (let i = 0; i < frameGrabberData[0].data_array.length; i+=2) {
+      if(frameGrabberData.length > 0) {
+        for (let i = 0; i < frameGrabberData[0].data_array.length; i+=2) {
     
-  //         tmpData.push({source: frameGrabberData[0].data_array[i].data_value, filepath: API_ROOT_URL + IMAGE_PATH + '/' + frameGrabberData[0].data_array[i+1].data_value.split('/').pop()} )
-  //       }
+          tmpData.push({source: frameGrabberData[0].data_array[i].data_value, filepath: API_ROOT_URL + IMAGE_PATH + '/' + frameGrabberData[0].data_array[i+1].data_value.split('/').pop()} )
+        }
 
-  //       return (
-  //         <Row>
-  //           {
-  //             tmpData.map((image) => {
-  //               return (
-  //                 <Col key={image.source} xs={12} sm={6} md={3} lg={3}>
-  //                   {this.renderImage(image.source, image.filepath)}
-  //                 </Col>
-  //               )
-  //             })
-  //           }
-  //         </Row>
-  //       )
-  //     }
-  //   }
-  // }
+        return (
+          <Row>
+            {
+              tmpData.map((image) => {
+                return (
+                  <Col key={image.source} xs={12} sm={6} md={3} lg={3}>
+                    {this.renderImage(image.source, image.filepath)}
+                  </Col>
+                )
+              })
+            }
+          </Row>
+        )
+      }
+    }
+  }
 
   renderAuxDataPanel() {
 
@@ -177,6 +177,9 @@ class EventShowDetailsModal extends Component {
               <Modal.Title>Event Details</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <Row>
+                {this.renderImagerPanel()}
+              </Row>
               <Row>
                 <Col xs={12} sm={6} md={4}>
                   <ListGroup>
