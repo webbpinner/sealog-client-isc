@@ -3,11 +3,6 @@ React-Redux based front-end to the Sealog event reviewing server customized to s
 
 For installation instruction please look at [INSTALL.md](./INSTALL.md)
 
-[Live Demo](https://sealog-isc-test.oceandatarat.org)
-
-- admin account for demo: admin:isc.Passw0rd
-- guest account for demo: guest:guest
-
 **sealog-client-isc** is based off [sealog-client-jason](https://github.com/webbpinner/sealog-client-jason)
 
 # Current Users
