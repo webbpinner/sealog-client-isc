@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 import { AUTH_USER } from './actions/types';
 import Header from './components/header';
 import Footer from './components/footer';
-import Login from './components/auth/login';
+import Login from './components/auth/login_ex_edu';
 import Logout from './components/auth/logout';
 import Profile from './components/auth/profile';
 import Register from './components/auth/register';

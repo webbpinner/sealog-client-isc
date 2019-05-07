@@ -1,6 +1,6 @@
 {
   "name": "sealog-client-isc",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "GPL-3.0",
   "description": "Custom Sealog event-logging client built for sealog-server-jason",
   "bugs": {
