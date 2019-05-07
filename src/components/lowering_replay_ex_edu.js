@@ -284,6 +284,11 @@ class LoweringReplay extends Component {
     this.props.showModal('eventComment', { event: this.props.event.events[index], handleUpdateEvent: this.props.updateEvent });
   }
 
+  handleEventPermalinkModal(event) {
+    this.props.showModal('eventPermalink', { event: event, handleUpdateEvent: this.props.updateEvent });
+  }
+
+
   handlePageSelect(eventKey) {
     this.handleLoweringReplayPause();
     this.setState({activePage: eventKey, replayEventIndex: (eventKey-1)*maxEventsPerPage });
@@ -782,10 +787,10 @@ class LoweringReplay extends Component {
             event_seatube_permalink = true
             if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
               if( event_option.event_option_value !== '') {
-                filtered.push(<span key={`event_option_${index}`}>{event_option.event_option_name}: <a target="_blank" href={this.props.event.selected_event.event_options[index].event_option_value}>{this.props.event.selected_event.event_options[index].event_option_value}</a> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Edit</span>)<br/></span>)
+                filtered.push(<span key={`event_option_${index}`}>{event_option.event_option_name}: <a target="_blank" href={this.props.event.selected_event.event_options[index].event_option_value}>{this.props.event.selected_event.event_options[index].event_option_value}</a> (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.selected_event)}>Edit</span>)<br/></span>)
               }
               else {
-                filtered.push(<span key={`event_option_${index}`}>{event_option.event_option_name}: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+                filtered.push(<span key={`event_option_${index}`}>{event_option.event_option_name}: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.selected_event)}>Add</span>)<br/></span>)
               }
             }
           }
@@ -799,7 +804,7 @@ class LoweringReplay extends Component {
 
       if(this.props.event.selected_event.event_value === "EDU" && !event_seatube_permalink) {
         if(this.props.roles.includes("admin") || this.props.roles.includes("event_manager") || this.props.roles.includes("event_loggerr")) {
-          return_event_options.push(<span key={`event_option_${return_event_options.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal()}>Add</span>)<br/></span>)
+          return_event_options.push(<span key={`event_option_${return_event_options.length}`}>seatube_permalink: (<span className="text-primary" onClick={() => this.handleEventPermalinkModal(this.props.event.selected_event)}>Add</span>)<br/></span>)
         }
         else {
           return_event_options.push(<span key={`event_option_${return_event_options.length}`}>seatube_permalink:<br/></span>) 
