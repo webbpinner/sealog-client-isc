@@ -2,13 +2,13 @@
 
 ### Prerequisites
 
- - [sealog-server-jason-shoreside](https://github.com/webbpinner/sealog-server-jason-shoreside)
+ - [sealog-server-jason](https://github.com/webbpinner/sealog-server-jason)
  - [nodeJS](https://nodejs.org)
  - [npm](https://www.npmjs.com)
  - [git](https://git-scm.com)
  
 #### Installing NodeJS/npm on Ubuntu 18.04LTS
-The standard Ubuntu repositories for Ubuntu 18.04 only provide install packages for NodeJS v4.  sealog-client-isc (and sealog-server-jason-shoreside) require nodeJS >= v8.11
+The standard Ubuntu repositories for Ubuntu 18.04 only provide install packages for NodeJS v4.  sealog-client-isc (and sealog-server-jason) require nodeJS >= v8.11
  
 To install nodeJS v8.11 on Ubuntu 18.04LTS run the following commands:
  ```

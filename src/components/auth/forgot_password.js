@@ -3,7 +3,7 @@ import { reduxForm, Field } from 'redux-form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Grid, Row, Col, FormGroup, Checkbox, Panel, Button, Alert, Image } from 'react-bootstrap';
+import { Form, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
 import * as actions from '../../actions';
 import { ROOT_PATH, RECAPTCHA_SITE_KEY } from '../../client_config';
@@ -31,23 +31,38 @@ class ForgotPassword extends Component {
     this.setState({reCaptcha: token})
   }
 
+  renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
+    let requiredField = (required)? <span className='text-danger'> *</span> : ''
+    let placeholder_txt = (placeholder)? placeholder: label
+
+    const labelComponent = (label)? <Form.Label>{label}{requiredField}</Form.Label> : null
+
+    return (
+      <Form.Group as={Col} lg="12">
+        {labelComponent}
+        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
+    )
+  }
+
   renderSuccess() {
 
     if (this.props.successMessage) {
       const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
 
       return (
-        <Panel className="form-signin" >
-          <Panel.Body>
+        <Card className="form-signin" >
+          <Card.Body>
             {panelHeader}
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.successMessage}
             </div>
-            <div className="text-right">
+            <div className="float-right">
               <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
             </div>
-          </Panel.Body>
-        </Panel>
+          </Card.Body>
+        </Card>
       )
     }
   }
@@ -56,13 +71,13 @@ class ForgotPassword extends Component {
 
     if(this.props.errorMessage) {
       return (
-        <Alert bsStyle="danger">
+        <Alert variant="danger">
           <strong>Opps!</strong> {this.props.errorMessage}
         </Alert>
       )
     } else if (this.props.successMessage) {
       return (
-        <Alert bsStyle="success">
+        <Alert variant="success">
           <strong>Sweet!</strong> {this.props.successMessage}
         </Alert>
       )
@@ -73,40 +88,44 @@ class ForgotPassword extends Component {
 
     if(!this.props.successMessage) {
 
-      const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
+      const panelHeader = (<h5 className="form-signin-heading">Forgot Password</h5>);
       const { handleSubmit, pristine, reset, submitting, valid } = this.props;
 
+      const submitButton = (RECAPTCHA_SITE_KEY != "")?  <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button>
+      const recaptcha = ( RECAPTCHA_SITE_KEY != "")? (
+        <span>
+          <ReCAPTCHA
+            sitekey={RECAPTCHA_SITE_KEY}
+            theme="dark"
+            size="normal"
+            onChange={this.onCaptchaChange.bind(this)}
+          />
+          <br/>
+        </span>
+      ): null
+
       return (
-        <Panel className="form-signin" >
-          <Panel.Body>
+        <Card className="form-signin" >
+          <Card.Body>
             {panelHeader}
-            <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <FormGroup>
+            <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+              <Form.Group>
                 <Field
                   name="email"
-                  component="input"
-                  type="text"
+                  component={this.renderTextField}
                   placeholder="Email Address"
-                  className="form-control"
                 />
-              </FormGroup>
-              <ReCAPTCHA
-                ref={e => recaptchaInstance = e}
-                sitekey={RECAPTCHA_SITE_KEY}
-                theme="dark"
-                size="normal"
-                onChange={this.onCaptchaChange.bind(this)}
-              />
-              <br/>
+              </Form.Group>
+              {recaptcha}
               {this.renderAlert()}
-              <Button bsStyle="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button>
-            </form>
+              {submitButton}
+            </Form>
             <br/>
-            <div className="text-right">
+            <div className="float-right">
               <Link to={ `/login` }>Back to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
             </div>
-          </Panel.Body>
-        </Panel>
+          </Card.Body>
+        </Card>
       )
     }
   }
@@ -142,10 +161,8 @@ function mapStateToProps(state) {
   }
 }
 
-let recaptchaInstance = null;
-
 const afterSubmit = (result, dispatch) => {
-  recaptchaInstance.reset();
+  // reCaptchaInstance.reset();
 }
 
 ForgotPassword = reduxForm({

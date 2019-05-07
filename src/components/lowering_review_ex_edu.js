@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom';
-import { LinkContainer } from 'react-router-bootstrap';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import Cookies from 'universal-cookie';
-import { Button, Row, Col, Panel, ListGroup, ListGroupItem, ButtonToolbar, DropdownButton, Pagination, MenuItem, Tooltip, OverlayTrigger, Well } from 'react-bootstrap';
+import { Button, Row, Col, Card, ListGroup, Dropdown, Pagination, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
 import EventShowDetailsModal from './event_show_details_modal_ex_edu';
-import EventPermalinkModal from './event_permalink_modal';
+import LoweringDropdown from './lowering_dropdown';
+import LoweringModeDropdown from './lowering_mode_dropdown';
 import * as actions from '../actions';
 import { ROOT_PATH, API_ROOT_URL } from '../client_config';
 
@@ -21,7 +21,7 @@ const timeFormat = "HHmm"
 
 const maxEventsPerPage = 15
 
-class LoweringSearch extends Component {
+class LoweringReview extends Component {
 
   constructor (props) {
     super(props);
@@ -33,11 +33,21 @@ class LoweringSearch extends Component {
 
     this.handleEventUpdate = this.handleEventUpdate.bind(this);
     this.handlePageSelect = this.handlePageSelect.bind(this);
-    this.updateEventFilter = this.updateEventFilter.bind(this)
+    this.updateEventFilter = this.updateEventFilter.bind(this);
+    this.handleLoweringSelect = this.handleLoweringSelect.bind(this);
+    this.handleLoweringModeSelect = this.handleLoweringModeSelect.bind(this);
+
   }
 
-  componentWillMount(){
-    this.props.initLoweringReplay(this.props.match.params.id, this.state.hideASNAP);
+  componentDidMount(){
+    if(!this.props.lowering.id || this.props.lowering.id != this.props.match.params.id || this.props.event.events.length == 0) {
+      // console.log("initLoweringReplay", this.props.match.params.id)
+      this.props.initLoweringReplay(this.props.match.params.id, this.state.hideASNAP);
+    }
+
+    // if(!this.props.cruise.id || this.props.lowering.id != this.props.match.params.id){
+    this.props.initCruiseFromLowering(this.props.match.params.id);
+    // }
   }
 
   componentDidUpdate() {
@@ -208,6 +218,22 @@ class LoweringSearch extends Component {
     })
   }
 
+  handleLoweringSelect(id) {
+    this.props.initLoweringReplay(id, this.state.hideASNAP);
+    this.props.initCruiseFromLowering(id);
+    this.setState({activePage: 1})
+  }
+
+  handleLoweringModeSelect(mode) {
+    if(mode === "Review") {
+      this.props.gotoLoweringReview(this.props.match.params.id)
+    } else if (mode === "Gallery") {
+      this.props.gotoLoweringGallery(this.props.match.params.id)
+    } else if (mode === "Replay") {
+      this.props.gotoLoweringReplay(this.props.match.params.id)
+    }
+  }
+
   toggleASNAP() {
     this.props.eventUpdateLoweringReplay(this.props.lowering.id, !this.state.hideASNAP)
     this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}))
@@ -220,115 +246,108 @@ class LoweringSearch extends Component {
     const toggleASNAPTooltip = (<Tooltip id="toggleASNAPTooltip">Show/Hide ASNAP Events</Tooltip>)
 
     const ASNAPToggleIcon = (this.state.hideASNAP)? "Show ASNAP" : "Hide ASNAP"
-    const ASNAPToggle = (<Button disabled={this.props.event.fetching} bsSize="xs" onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</Button>)
+    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>)
 
     return (
       <div>
         { Label }
-        <ButtonToolbar className="pull-right" >
+        <span className="float-right">
           {ASNAPToggle}
-          <DropdownButton disabled={this.props.event.fetching} bsSize="xs" key={1} title={<OverlayTrigger placement="top" overlay={exportTooltip}><FontAwesomeIcon icon='download' fixedWidth/></OverlayTrigger>} id="export-dropdown" pullRight>
-            <MenuItem key="toJSONHeader" eventKey={1.1} header>JSON format</MenuItem>
-            <MenuItem key="toJSONAll" eventKey={1.2} onClick={ () => this.exportEventsWithAuxDataToJSON()}>Events w/aux data</MenuItem>
-            <MenuItem key="toJSONEvents" eventKey={1.3} onClick={ () => this.exportEventsToJSON()}>Events Only</MenuItem>
-            <MenuItem key="toJSONAuxData" eventKey={1.4} onClick={ () => this.exportAuxDataToJSON()}>Aux Data Only</MenuItem>
-            <MenuItem divider />
-            <MenuItem key="toCSVHeader" eventKey={1.5} header>CSV format</MenuItem>
-            <MenuItem key="toCSVAll" eventKey={1.6} onClick={ () => this.exportEventsWithAuxDataToCSV()}>Events w/aux data</MenuItem>
-            <MenuItem key="toCSVEvents" eventKey={1.6} onClick={ () => this.exportEventsToCSV()}>Events Only</MenuItem>
-          </DropdownButton>
-        </ButtonToolbar>
+          <Dropdown as={'span'} disabled={this.props.event.fetching} id="dropdown-download">
+            <Dropdown.Toggle as={'span'}><OverlayTrigger placement="top" overlay={exportTooltip}><FontAwesomeIcon icon='download' fixedWidth/></OverlayTrigger></Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Header className="text-warning" key="toJSONHeader">JSON format</Dropdown.Header>
+              <Dropdown.Item key="toJSONAll" onClick={ () => this.exportEventsWithAuxDataToJSON()}>Events w/aux data</Dropdown.Item>
+              <Dropdown.Item key="toJSONEvents" onClick={ () => this.exportEventsToJSON()}>Events Only</Dropdown.Item>
+              <Dropdown.Item key="toJSONAuxData" onClick={ () => this.exportAuxDataToJSON()}>Aux Data Only</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Header className="text-warning" key="toCSVHeader">CSV format</Dropdown.Header>
+              <Dropdown.Item key="toCSVAll" onClick={ () => this.exportEventsWithAuxDataToCSV()}>Events w/aux data</Dropdown.Item>
+              <Dropdown.Item key="toCSVEvents" onClick={ () => this.exportEventsToCSV()}>Events Only</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </span>
       </div>
     );
   }
 
-  renderEventPanel() {
+  renderEventCard() {
 
-    if(this.props.event.fetching) {
+    if (!this.props.event.events) {
       return (
-        <Panel>
-        <Panel.Heading>{ this.renderEventListHeader() }</Panel.Heading>
-        <ListGroup>
-          <ListGroupItem>Loading...</ListGroupItem>
-        </ListGroup>
-        </Panel>
-      )
-    } else if(this.props.event && this.props.event.events.length > 0) {
-
-      let eventList = (this.state.hideASNAP)? this.props.event.events.filter(event => (event.event_value != "ASNAP")) : this.props.event.events
-
-      if(eventList.length == 0){
-        return (
-          <Panel>
-            <Panel.Heading>{ this.renderEventListHeader() }</Panel.Heading>
-            <Panel.Body>No events found!</Panel.Body>
-          </Panel>
-        )
-      }
-
-      return (          
-        <Panel>
-        <Panel.Heading>{ this.renderEventListHeader() }</Panel.Heading>
-        <ListGroup>
-          {
-            eventList.map((event, index) => {
-              if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
-
-                let comment_exists = false;
-                let edu_event = (event.event_value == "EDU")? true : false;
-                let seatube_exists = false;
-                let seatube_permalink = '';
-                let youtube_material = false;
-
-                let eventOptionsArray = event.event_options.reduce((filtered, option) => {
-                  if(option.event_option_name == 'event_comment') {
-                    comment_exists = (option.event_option_value !== '')? true : false;
-                  } else if(edu_event && option.event_option_name == 'seatube_permalink') {
-                    seatube_exists = (option.event_option_value !== '')? true : false;
-                    seatube_permalink = option.event_option_value;
-                  } else if(edu_event && option.event_option_name == 'youtube_material') {
-                    youtube_material = (option.event_option_value == 'Yes')? true : false;
-                  } else {
-                    filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
-                  }
-                  return filtered
-                },[])
-                
-                if (event.event_free_text) {
-                  eventOptionsArray.push("text: \"" + event.event_free_text + "\"")
-                } 
-
-                let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
-                let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon icon='plus' fixedWidth inverse transform="shrink-4"/></span>
-                let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
-
-                let permalinkTooltip = null
-                let youtubeTooltip = null
-
-                if(edu_event) {
-                  permalinkTooltip = (seatube_permalink)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
-                  youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
-                }
-                
-                return (
-                  <ListGroupItem key={event.id}><Row><Col xs={11} onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</Col><Col>{commentTooltip} {permalinkTooltip} {youtubeTooltip} </Col></Row></ListGroupItem>
-                )
-              }
-            })
-          }
-        </ListGroup>
-        </Panel>
-      );
-    } else {
-      return (
-        <Panel>
-        <Panel.Heading>{ this.renderEventListHeader() }</Panel.Heading>
-          <ListGroup>
-            <ListGroupItem>No events found!</ListGroupItem>
-          </ListGroup>
-        </Panel>
+        <Card>
+          <Card.Header>{ this.renderEventListHeader() }</Card.Header>
+          <Card.Body>Loading...</Card.Body>
+        </Card>
       )
     }
+
+    return (
+      <Card>
+        <Card.Header>{ this.renderEventListHeader() }</Card.Header>
+        <ListGroup>
+          {this.renderEvents()}
+        </ListGroup>
+      </Card>
+    );
+  }
+
+
+  renderEvents() {
+
+    if(this.props.event.events && this.props.event.events.length > 0){
+
+      let eventArray = []
+
+      for (let i = 0; i < this.props.event.events.length; i++) {
+
+        let event = this.props.event.events[i]
+        
+        let comment_exists = false;
+        let edu_event = (event.event_value === "EDU")? true : false;
+        let seatube_exists = false;
+        let seatube_permalink = '';
+        let youtube_material = false;
+
+        let eventOptionsArray = event.event_options.reduce((filtered, option) => {
+          if(option.event_option_name === 'event_comment') {
+            comment_exists = (option.event_option_value !== '')? true : false;
+          } else if(edu_event && option.event_option_name == 'seatube_permalink') {
+            seatube_exists = (option.event_option_value !== '')? true : false;
+            seatube_permalink = option.event_option_value;
+          } else if(edu_event && option.event_option_name === 'youtube_material') {
+            youtube_material = (option.event_option_value === 'Yes')? true : false;
+          } else {
+            filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
+          }
+          return filtered
+        },[])
+        
+        if (event.event_free_text) {
+          eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
+        } 
+
+        let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
+     // let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className="text-secondary" icon='plus' fixedWidth inverse transform="shrink-4"/></span>
+        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className="text-secondary" icon='plus' fixedWidth inverse transform="shrink-4"/></span>
+     // let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
+        let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
+
+        let permalinkTooltip = null
+        let youtubeTooltip = null
+
+        if(edu_event) {
+          permalinkTooltip = (seatube_permalink)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
+          youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
+        }
+
+     // eventArray.push(<ListGroup.Item className="event-list-item" eventKey={event.id} key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip}</span></ListGroup.Item>);
+        eventArray.push(<ListGroup.Item className="event-list-item" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{commentTooltip} {permalinkTooltip} {youtubeTooltip} </span></ListGroup.Item>);
+      }
+      return eventArray
+    }
+
+    return (<ListGroup.Item key="noEvents" >No events found</ListGroup.Item>)
   }
 
   renderPagination() {
@@ -362,7 +381,7 @@ class LoweringSearch extends Component {
       }
 
       return (
-        <Pagination>
+        <Pagination style={{marginTop: "8px"}}>
           <Pagination.First onClick={() => this.setState({activePage: 1})} />
           <Pagination.Prev onClick={() => { if(this.state.activePage > 1) { this.setState(prevState => ({ activePage: prevState.activePage-1}))}}} />
           {rangeWithDots}
@@ -375,27 +394,27 @@ class LoweringSearch extends Component {
 
   render(){
 
-    let lowering_id = (this.props.lowering.lowering_id)? this.props.lowering.lowering_id : "loading..."
+    const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading..."
+    const lowering_id = (this.props.lowering.lowering_id)? this.props.lowering.lowering_id : "Loading..."
+
     return (
       <div>
         <EventCommentModal />
-        <EventPermalinkModal />
         <EventShowDetailsModal />
         <Row>
           <Col lg={12}>
-            <div>
-              <Well bsSize="small">
-                {`Lowerings / ${lowering_id} / Review`}{' '}
-                <span className="pull-right">
-                  <LinkContainer to={ `/lowering_replay/${this.props.match.params.id}` }><Button disabled={this.props.event.fetching} bsSize={'xs'}>Goto Replay</Button></LinkContainer>
-                </span>
-              </Well>
-            </div>
+            <span style={{paddingLeft: "8px"}}>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{cruise_id}</span>
+              {' '}/{' '}
+              <span><LoweringDropdown onClick={this.handleLoweringSelect} active_cruise={this.props.cruise} active_lowering={this.props.lowering}/></span>
+              {' '}/{' '}
+              <span><LoweringModeDropdown onClick={this.handleLoweringModeSelect} active_mode={"Review"} modes={["Gallery", "Replay"]}/></span>
+            </span>
           </Col>
         </Row>
-        <Row>
+        <Row style={{paddingTop: "8px"}}>
           <Col sm={7} md={8} lg={9}>
-            {this.renderEventPanel()}
+            {this.renderEventCard()}
             {this.renderPagination()}
           </Col>
           <Col sm={5} md={4} lg={3}>
@@ -411,8 +430,9 @@ function mapStateToProps(state) {
   return {
     roles: state.user.profile.roles,
     event: state.event,
+    cruise: state.cruise.cruise,
     lowering: state.lowering.lowering
   }
 }
 
-export default connect(mapStateToProps, null)(LoweringSearch);
+export default connect(mapStateToProps, null)(LoweringReview);

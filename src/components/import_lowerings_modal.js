@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Button, Modal, Grid, Row, Col } from 'react-bootstrap';
+import { Button, Modal, Row, Col } from 'react-bootstrap';
 import { connectModal } from 'redux-modal';
 import ReactFileReader from 'react-file-reader';
 import Cookies from 'universal-cookie';
@@ -37,7 +37,7 @@ class ImportLoweringsModal extends Component {
     this.props.handleHide()
   }
 
-  async insertLowering({id, lowering_id, start_ts, stop_ts, lowering_location = '', lowering_tags = [], lowering_hidden = false, lowering_access_list = [], lowering_additional_meta = {} }) {
+  async insertLowering({id, lowering_id, start_ts, stop_ts, lowering_location = '', lowering_tags = [], lowering_hidden = false, lowering_additional_meta = {} }) {
 
     try {
       const result = await axios.get(`${API_ROOT_URL}/api/v1/lowerings/${id}`,
@@ -65,7 +65,7 @@ class ImportLoweringsModal extends Component {
         try {
 
           const result = await axios.post(`${API_ROOT_URL}/api/v1/lowerings`,
-          {id, lowering_id, start_ts, stop_ts, lowering_location, lowering_tags, lowering_hidden, lowering_access_list, lowering_additional_meta},
+          {id, lowering_id, start_ts, stop_ts, lowering_location, lowering_tags, lowering_hidden, lowering_additional_meta},
           {
             headers: {
               authorization: cookies.get('token'),
@@ -182,26 +182,24 @@ class ImportLoweringsModal extends Component {
         </Modal.Header>
 
         <Modal.Body>
-          <Grid fluid>
-            <Row>
-              <Col xs={6}>
-                <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleLoweringRecordImport}>
-                    <Button>Select File</Button>
-                </ReactFileReader>
-              </Col>
-              <Col xs={4}>
-                Pending: {this.state.pending}
-                <hr/>
-                Imported: {this.state.imported}<br/>
-                Skipped: {this.state.skipped}<br/>
-                Errors: {this.state.errors}<br/>
-              </Col>
-            </Row>
-          </Grid>
+          <Row>
+            <Col xs={6}>
+              <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleLoweringRecordImport}>
+                  <Button size="sm">Select File</Button>
+              </ReactFileReader>
+            </Col>
+            <Col xs={4}>
+              Pending: {this.state.pending}
+              <hr/>
+              Imported: {this.state.imported}<br/>
+              Skipped: {this.state.skipped}<br/>
+              Errors: {this.state.errors}<br/>
+            </Col>
+          </Row>
         </Modal.Body>
 
         <Modal.Footer>
-          <Button onClick={this.quitImport}>Close</Button>
+          <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
         </Modal.Footer>
       </Modal>
     );

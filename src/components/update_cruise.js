@@ -1,23 +1,22 @@
-import axios from 'axios';
-import moment from 'moment';
-import Datetime from 'react-datetime';
 import React, { Component } from 'react';
-import Cookies from 'universal-cookie';
-import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { reduxForm, Field, initialize, reset } from 'redux-form';
-import { Alert, Button, Checkbox, Col, FormGroup, FormControl, FormGroupItem, Panel, Row, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import { Alert, Button, Col, Card, Form, Row, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import axios from 'axios';
+import Cookies from 'universal-cookie';
+import moment from 'moment';
+import Datetime from 'react-datetime';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FileDownload from 'js-file-download';
 
 import { FilePond, File, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 
-import { API_ROOT_URL, MTU } from '../client_config';
+import { API_ROOT_URL } from '../client_config';
 import * as actions from '../actions';
 
 const dateFormat = "YYYY-MM-DD"
-
 
 const CRUISE_ROUTE = "/files/cruises";
 
@@ -61,31 +60,17 @@ class UpdateCruise extends Component {
       delete formProps.cruise_name
     }
 
+    if(formProps.cruise_vessel) {
+      formProps.cruise_additional_meta.cruise_vessel = formProps.cruise_vessel
+      delete formProps.cruise_vessel
+    }
+
     if(formProps.cruise_description) {
       formProps.cruise_additional_meta.cruise_description = formProps.cruise_description
       delete formProps.cruise_description
     }
 
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
-
-    if( MTU ) {
-
-      if (formProps.mtu_id) {
-        formProps.cruise_additional_meta.mtu_id = formProps.mtu_id
-        delete formProps.mtu_id
-      }
-
-      if (formProps.vessel_name) {
-        formProps.cruise_additional_meta.vessel_name = formProps.vessel_name
-        delete formProps.vessel_name
-      }
-
-      if (formProps.project_description) {
-        formProps.cruise_additional_meta.project_description = formProps.project_description
-        delete formProps.project_description
-      }
-    }
-
 
     this.props.updateCruise({...formProps });
     this.pond.removeFiles();
@@ -123,29 +108,52 @@ class UpdateCruise extends Component {
     });
   }
 
-  renderField({ input, label, placeholder, required, type, meta: { touched, error, warning } }) {
+  renderTextField({ input, label, placeholder, required, meta: { touched, error } }) {
     let requiredField = (required)? <span className='text-danger'> *</span> : ''
     let placeholder_txt = (placeholder)? placeholder: label
 
     return (
-      <FormGroup>
-        <label>{label}{requiredField}</label>
-        <FormControl {...input} placeholder={placeholder_txt} type={type}/>
-        {touched && (error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>)}
-      </FormGroup>
+      <Form.Group as={Col} lg="6">
+        <Form.Label>{label}{requiredField}</Form.Label>
+        <Form.Control type="text" {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
     )
   }
 
-  renderTextArea({ input, label, type, placeholder, required, rows = 4, meta: { touched, error, warning } }) {
+  renderTextArea({ input, label, placeholder, required, rows = 4, meta: { touched, error, warning } }) {
     let requiredField = (required)? <span className='text-danger'> *</span> : ''
     let placeholder_txt = (placeholder)? placeholder: label
 
     return (
-      <FormGroup>
-        <label>{label}{requiredField}</label>
-        <FormControl {...input} placeholder={placeholder_txt} componentClass={type} rows={rows}/>
-        {touched && ((error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>))}
-      </FormGroup>
+      <Form.Group as={Col} lg="12">
+        <Form.Label>{label}{requiredField}</Form.Label>
+        <Form.Control as="textarea" {...input} placeholder={placeholder_txt} rows={rows}/>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
+    )
+  }
+
+  renderSelectField({ input, label, placeholder, required, options, meta: { touched, error } }) {
+
+    let requiredField = (required)? <span className='text-danger'> *</span> : ''
+    let placeholder_txt = (placeholder)? placeholder: label
+    let defaultOption = ( <option key={`${input.name}.empty`} value=""></option> );
+    let optionList = options.map((option, index) => {
+      return (
+        <option key={`${input.name}.${index}`} value={`${option}`}>{ `${option}`}</option>
+      );
+    });
+
+    return (
+      <Form.Group as={Col} lg="6">
+        <Form.Label>{label}{requiredField}</Form.Label>
+        <Form.Control as="select" {...input} placeholder={placeholder_txt} isInvalid={touched && error}>
+          { defaultOption }
+          { optionList }
+        </Form.Control>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
     )
   }
 
@@ -153,65 +161,65 @@ class UpdateCruise extends Component {
     let requiredField = (required)? <span className='text-danger'> *</span> : ''
     
     return (
-      <FormGroup>
-        <label>{label}{requiredField}</label>
+      <Form.Group as={Col} lg="6">
+        <Form.Label>{label}{requiredField}</Form.Label>
         <Datetime {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat) : null} dateFormat={dateFormat} timeFormat={false} selected={input.value ? moment.utc(input.value, dateFormat) : null }/>
-        {touched && (error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>)}
-      </FormGroup>
+        {touched && (error && <div style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}} className='text-danger'>{error}</div>)}
+      </Form.Group>
     )
   }
 
-  renderCheckboxGroup({ label, name, options, input, meta: { dirty, error, warning } }) {    
+  renderCheckboxGroup({ label, name, options, input, required, meta: { dirty, error } }) {
 
+    let requiredField = (required)? (<span className='text-danger'> *</span>) : ''
     let checkboxList = options.map((option, index) => {
 
-      let tooltip = (option.description)? (<Tooltip id={`${option.value}_Tooltip`}>{option.description}</Tooltip>) : null
-      let overlay = (tooltip != null)? (<OverlayTrigger placement="right" overlay={tooltip}><span>{option.label}</span></OverlayTrigger>) : option.label
-
-      return (
-          <Checkbox
-            name={`${option.label}[${index}]`}
-            key={`${label}.${index}`}
-            value={option.value}
-            checked={input.value.indexOf(option.value) !== -1}
-            onChange={event => {
-              const newValue = [...input.value];
-              if(event.target.checked) {
-                newValue.push(option.value);
-              } else {
-                newValue.splice(newValue.indexOf(option.value), 1);
-              }
-              return input.onChange(newValue);
-            }}
-          >
-            { overlay }
-          </Checkbox>
+    return (
+        <Form.Check
+          inline
+          label={option.value}
+          name={`${option.label}[${index}]`}
+          key={`${label}.${index}`}
+          value={option.value}
+          checked={input.value.indexOf(option.value) !== -1}
+          onChange={event => {
+            const newValue = [...input.value];
+            if(event.target.checked) {
+              newValue.push(option.value);
+            } else {
+              newValue.splice(newValue.indexOf(option.value), 1);
+            }
+            return input.onChange(newValue);
+          }}
+        />
       );
     });
 
     return (
-      <FormGroup>
-        <label>{label}</label>
+      <Form.Group>
+        <Form.Label>{label}{requiredField}</Form.Label><br/>
         {checkboxList}
-        {(error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>)}
-      </FormGroup>
+        {dirty && (error && <div className="text-danger" style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}}>{error}</div>)}
+      </Form.Group>
     );
   }
 
-  renderCheckbox({ input, label, meta: { dirty, error, warning } }) {    
-
+  renderCheckbox({ input, label, meta: { dirty, error } }) {    
     return (
-      <FormGroup>
-        <Checkbox
+      <Form.Group as={Col} lg="6">
+        <Form.Check
+          {...input}
+          label={label}
           checked={input.value ? true : false}
           onChange={(e) => input.onChange(e.target.checked)}
+          isInvalid={dirty && error}
         >
-          {label}
-        </Checkbox>
-        {(error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>)}
-      </FormGroup>
+        </Form.Check>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
     );
   }
+
 
   renderFiles() {
     if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files && this.props.cruise.cruise_additional_meta.cruise_files.length > 0) {
@@ -226,7 +234,7 @@ class UpdateCruise extends Component {
   renderAlert() {
     if (this.props.errorMessage) {
       return (
-        <Alert bsStyle="danger">
+        <Alert variant="danger">
           <strong>Opps!</strong> {this.props.errorMessage}
         </Alert>
       )
@@ -236,7 +244,7 @@ class UpdateCruise extends Component {
   renderMessage() {
     if (this.props.message) {
       return (
-        <Alert bsStyle="success">
+        <Alert variant="success">
           <strong>Success!</strong> {this.props.message}
         </Alert>
       )
@@ -248,136 +256,118 @@ class UpdateCruise extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const updateCruiseFormHeader = (<div>Update Cruise</div>);
 
-    const vessel_name = ( MTU )? (
-      <Field
-        name="vessel_name"
-        type="text"
-        component={this.renderField}
-        label="Vessel Name"
-        placeholder="i.e. R/V Endeavor"
-      />
-    ) : null
-
-    const mtu_id = ( MTU )? (
-      <Field
-        name="mtu_id"
-        type="text"
-        component={this.renderField}
-        label="MTU ID"
-        placeholder="i.e. MTU01 v2"
-      />
-    ) : null
-
-    const project_description = ( MTU )? (
-      <Field
-        name="project_description"
-        component={this.renderTextArea}
-        type="textarea"
-        label="Project Description"
-        placeholder="A brief summary of the project"
-        rows={10}
-      />
-    ) : null
-
     if (this.props.roles && (this.props.roles.includes("admin") || this.props.roles.includes('cruise_manager'))) {
 
       return (
-        <Panel className="form-standard">
-          <Panel.Heading>{updateCruiseFormHeader}</Panel.Heading>
-          <Panel.Body>
-            <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Field
-                name="cruise_id"
-                component={this.renderField}
-                type="text"
-                label="Cruise ID"
-                placeholder="i.e. AT02-17"
-                required={true}
-              />
-              <Field
-                name="cruise_name"
-                type="text"
-                component={this.renderField}
-                label="Full Name"
-                placeholder="i.e. Lost City 2018"
-                required={true}
-              />
-              <Field
-                name="cruise_description"
-                component={this.renderTextArea}
-                type="textarea"
-                label="Cruise Description"
-                placeholder="A brief summary of the cruise"
-                rows={10}
-              />
-              <Field
-                name="cruise_location"
-                type="text"
-                component={this.renderField}
-                label="Full Location"
-                placeholder="i.e. Lost City"
-              />
-              {mtu_id}
-              {vessel_name}
-              {project_description}
-              <Field
-                name="start_ts"
-                component={this.renderDatePicker}
-                type="text"
-                label="Start Date (UTC)"
-                required={true}
-              />
-              <Field
-                name="stop_ts"
-                component={this.renderDatePicker}
-                type="text"
-                label="Stop Date (UTC)"
-                required={true}
-              />
-              <Field
-                name="cruise_pi"
-                component={this.renderField}
-                type="text"
-                label="Primary Investigator"
-                placeholder="i.e. Dr. Susan Lang"
-              />
-              <Field
-                name="cruise_tags"
-                component={this.renderTextArea}
-                type="textarea"
-                label="Cruise Tags, comma delimited"
-                placeholder="A comma-delimited list of tags, i.e. coral,chemistry,engineering"
-              />
-              <label>Cruise Files</label>
-              {this.renderFiles()}
-              <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
-                maxFiles={5} 
-                server={{
-                  url: API_ROOT_URL,
-                  process: {
-                    url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
-                    headers: { authorization: cookies.get('token') },
-                  },
-                  load: {
-                    url: CRUISE_ROUTE + '/filepond/load',
-                    headers: { authorization: cookies.get('token') },
-                  },
-                  revert: {
-                    url: CRUISE_ROUTE + '/filepond/revert',
-                    headers: { authorization: cookies.get('token') },
-                  }
-                }}
-              >
-              </FilePond>
+        <Card border="secondary">
+          <Card.Header>{updateCruiseFormHeader}</Card.Header>
+          <Card.Body>
+            <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+              <Form.Row>
+                <Field
+                  name="cruise_id"
+                  component={this.renderTextField}
+                  label="Cruise ID"
+                  placeholder="i.e. AT42-01"
+                  required={true}
+                />
+                <Field
+                  name="cruise_name"
+                  component={this.renderTextField}
+                  label="Cruise Name"
+                  placeholder="i.e. Lost City 2018"
+                />
+                <Field
+                  name="cruise_vessel"
+                  component={this.renderTextField}
+                  label="Vessel Name"
+                  placeholder="i.e. R/V Atlantis"
+                  required={true}
+                />
+                <Field
+                  name="cruise_pi"
+                  component={this.renderTextField}
+                  label="Primary Investigator"
+                  placeholder="i.e. Dr. Susan Lang"
+                  required={true}
+                />
+                <Field
+                  name="cruise_location"
+                  component={this.renderTextArea}
+                  label="Cruise Location"
+                  placeholder="i.e. Lost City, Mid Atlantic Ridge"
+                  rows={1}
+                />
+              </Form.Row>
+              <Form.Row>
+                <Field
+                  name="cruise_description"
+                  component={this.renderTextArea}
+                  label="Cruise Description"
+                  placeholder="i.e. A brief summary of the cruise"
+                  rows={8}
+                />
+              </Form.Row>
+              <Form.Row>
+                <Field
+                  name="start_ts"
+                  component={this.renderDatePicker}
+                  label="Start Date (UTC)"
+                  required={true}
+                />
+                <Field
+                  name="stop_ts"
+                  component={this.renderDatePicker}
+                  label="Stop Date (UTC)"
+                  required={true}
+                />
+              </Form.Row>
+              <Form.Row>
+                <Field
+                  name="cruise_participants"
+                  component={this.renderTextArea}
+                  label="Cruise Participants, comma delimited"
+                  placeholder="i.e. Dave Butterfield,Sharon Walker"
+                  rows={2}
+                />
+                <Field
+                  name="cruise_tags"
+                  component={this.renderTextArea}
+                  label="Cruise Tags, comma delimited"
+                  placeholder="i.e. coral,chemistry,engineering"
+                  rows={2}
+                />
+              </Form.Row>
+                  <Form.Label>Cruise Files</Form.Label>
+                  {this.renderFiles()}
+                  <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
+                    maxFiles={5} 
+                    server={{
+                      url: API_ROOT_URL,
+                      process: {
+                        url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
+                        headers: { authorization: cookies.get('token') },
+                      },
+                      load: {
+                        url: CRUISE_ROUTE + '/filepond/load',
+                        headers: { authorization: cookies.get('token') },
+                      },
+                      revert: {
+                        url: CRUISE_ROUTE + '/filepond/revert',
+                        headers: { authorization: cookies.get('token') },
+                      }
+                    }}
+                  >
+                  </FilePond>
               {this.renderAlert()}
               {this.renderMessage()}
-              <div className="pull-right">
-                <Button bsStyle="default" type="button" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
-                <Button bsStyle="primary" type="submit" disabled={submitting || !valid}>Update</Button>
+              <div className="float-right" style={{marginRight: "-20px", marginBottom: "-8px"}}>
+                <Button variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
+                <Button variant="primary" size="sm" type="submit" disabled={submitting || !valid}>Update</Button>
               </div>
-            </form>
-          </Panel.Body>
-        </Panel>
+            </Form>
+          </Card.Body>
+        </Card>
       )
     } else {
       return (
@@ -399,12 +389,24 @@ function validate(formProps) {
     errors.cruise_id = 'Must be 15 characters or less'
   }
 
-  if (!formProps.cruise_name) {
-    errors.cruise_name = 'Required'
+  if (!formProps.cruise_vessel) {
+    errors.cruise_vessel = 'Required'
   }
 
   if (!formProps.cruise_pi) {
     errors.cruise_pi = 'Required'
+  }
+
+  if (formProps.start_ts === '') {
+    errors.start_ts = 'Required'
+  } else if (!moment.utc(formProps.start_ts).isValid()) {
+    errors.start_ts = 'Invalid timestamp'
+  }
+
+  if (formProps.stop_ts === '') {
+    errors.stop_ts = 'Required'
+  } else if (!moment.utc(formProps.stop_ts).isValid()) {
+    errors.stop_ts = 'Invalid timestamp'
   }
 
   if ((formProps.start_ts != '') && (formProps.stop_ts != '')) {
@@ -434,7 +436,7 @@ function validate(formProps) {
 }
 
 function mapStateToProps(state) {
-  
+
   let initialValues = { ...state.cruise.cruise }
 
   if (initialValues.cruise_additional_meta) {
@@ -442,25 +444,19 @@ function mapStateToProps(state) {
       initialValues.cruise_name = initialValues.cruise_additional_meta.cruise_name
     }
 
+    if (initialValues.cruise_additional_meta.cruise_vessel) {
+      initialValues.cruise_vessel = initialValues.cruise_additional_meta.cruise_vessel
+    }
+
     if (initialValues.cruise_additional_meta.cruise_description) {
       initialValues.cruise_description = initialValues.cruise_additional_meta.cruise_description
     }
 
-    if ( MTU ) {
-      if (initialValues.cruise_additional_meta.mtu_id) {
-        initialValues.mtu_id = initialValues.cruise_additional_meta.mtu_id
-      }
-
-      if (initialValues.cruise_additional_meta.vessel_name) {
-        initialValues.vessel_name = initialValues.cruise_additional_meta.vessel_name
-      }
-
-      if (initialValues.cruise_additional_meta.project_description) {
-        initialValues.project_description = initialValues.cruise_additional_meta.project_description
-      }
+    if (initialValues.cruise_additional_meta.cruise_participants) {
+      initialValues.cruise_participants = initialValues.cruise_additional_meta.cruise_participants
     }
 
-    delete initialValues.cruise_additional_meta
+    // delete initialValues.cruise_additional_meta
   }
 
   return {

@@ -1,3 +1,4 @@
+
 // Use these settings if connecting to a server using http
 export const API_ROOT_URL = `http://${window.location.hostname}:8000/sealog-server`;
 export const WS_ROOT_URL = `ws://${window.location.hostname}:8000/ws`;
@@ -18,7 +19,7 @@ export const RECAPTCHA_SITE_KEY = ""
 // Site customization
 
 // Text show on the login page.  If a login image is defined then this text will appear below the image.
-export const LOGIN_SCREEN_TXT = "";
+export const LOGIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting real-time scientific and/or operational observations.";
 
 // Image file shown on the login page.  This image needs to be saved in the ./dist/images folder
 export const LOGIN_IMAGE = "login_image.png";

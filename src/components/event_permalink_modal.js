@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Button, FormGroup, FormControl, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { connectModal } from 'redux-modal';
 import { reduxForm, Field, initialize } from 'redux-form';
 import * as actions from '../actions';
@@ -40,15 +40,16 @@ class EventPermalinkModal extends Component {
     this.props.handleDestroy();
   }
 
-  renderTextField({ input, label, type, required, meta: { touched, error, warning } }) {
+  renderTextField({ input, label, placeholder, required, meta: { touched, error } }) {
     let requiredField = (required)? <span className='text-danger'> *</span> : ''
-    let labelElement = (label)? <label>{label}{requiredField}</label> : ''
+    let placeholder_txt = (placeholder)? placeholder: label
+
     return (
-      <FormGroup>
-        {labelElement}
-        <FormControl {...input} placeholder={label} type={type}/>
-        {touched && (error && <div className='text-danger'>{error}</div>) || (warning && <div className='text-danger'>{warning}</div>)}
-      </FormGroup>
+      <Form.Group>
+        <Form.Label>{label}{requiredField}</Form.Label>
+        <Form.Control type="text" {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+      </Form.Group>
     )
   }
 
@@ -57,7 +58,7 @@ class EventPermalinkModal extends Component {
 
     return (
       <Modal show={show} onHide={handleHide}>
-        <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+        <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
           <Modal.Header closeButton>
             <Modal.Title>Add/Update Permalink</Modal.Title>
           </Modal.Header>
@@ -66,14 +67,15 @@ class EventPermalinkModal extends Component {
             <Field
               name="event_permalink"
               component={this.renderTextField}
+              placeholder="http://"
             />
           </Modal.Body>
 
           <Modal.Footer>
-            <Button bsStyle="default" bsSize="small" type="button" disabled={submitting} onClick={handleHide}>Cancel</Button>
-            <Button bsStyle="primary" bsSize="small" type="submit" disabled={ submitting || !valid}>Submit</Button>
+            <Button variant="secondary" size="sm" disabled={submitting} onClick={handleHide}>Cancel</Button>
+            <Button variant="primary" size="sm" type="submit" disabled={ submitting || !valid}>Submit</Button>
           </Modal.Footer>
-        </form>
+        </Form>
       </Modal>
     );
   }
