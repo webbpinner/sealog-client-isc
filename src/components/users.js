@@ -297,7 +297,16 @@ class Users extends Component {
 
     if (this.props.roles.includes("admin") || this.props.roles.includes("cruise_manager")) {
 
-      let userForm = (this.props.userid)? <UpdateUser /> : <CreateUser />
+      const  userForm = (this.props.userid)? <UpdateUser /> : <CreateUser />
+
+      const systemUsersCard = (this.props.users.filter(user => user.system_user === true).length > 0) ? 
+      (
+        <Card border="secondary" style={{marginBottom: "8px"}} >
+          <Card.Header>{this.renderSystemUsersHeader()}</Card.Header>
+          {this.renderSystemUserTable()}
+          {this.renderPagination()}
+        </Card>
+      ) : null
 
       return (
         <div>
@@ -307,11 +316,7 @@ class Users extends Component {
           <NonSystemUsersWipeModal />
           <Row>
             <Col sm={12} md={7} lg={{span:6, offset:1}} xl={{span:5, offset:2}}>
-              <Card border="secondary" style={{marginBottom: "8px"}} >
-                <Card.Header>{this.renderSystemUsersHeader()}</Card.Header>
-                {this.renderSystemUserTable()}
-                {this.renderPagination()}
-              </Card>
+              {systemUsersCard}
               <Card border="secondary" style={{marginBottom: "8px"}} >
                 <Card.Header>
                   {this.renderUsersHeader()}
