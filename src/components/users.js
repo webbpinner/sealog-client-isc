@@ -105,10 +105,11 @@ class Users extends Component {
     if(this.props.users){
       let non_system_users = this.props.users.filter((user) => !user.system_user)
       return non_system_users.map((user) => {
+        const style = (user.disabled)? {"text-decoration": "line-through"}: {}
         return (
           <tr key={user.id}>
-            <td className={(this.props.userid == user.id)? "text-warning" : ""}>{user.username}</td>
-            <td>{user.fullname}</td>
+            <td style={style} className={(this.props.userid == user.id)? "text-warning" : ""}>{user.username}</td>
+            <td style={style}>{user.fullname}</td>
             <td>
               <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleUserSelect(user.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger>{' '}
               {(this.props.roles.includes('admin'))? <OverlayTrigger placement="top" overlay={tokenTooltip}><FontAwesomeIcon className="text-warning" onClick={ () => this.handleDisplayUserToken(user.id) } icon='eye' fixedWidth/></OverlayTrigger> : ''}{' '}
@@ -133,14 +134,16 @@ class Users extends Component {
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this user.</Tooltip>)
 
     if(this.props.users && this.props.users.length > 0) {
-      let system_users = this.props.users.filter((user) => user.system_user)
+      const system_users = this.props.users.filter((user) => user.system_user)
 
       return system_users.map((user) => {
+
+        const style = (user.disabled)? {"text-decoration": "line-through"}: {}
         if(user.system_user) {
           return (
             <tr key={user.id}>
-              <td className={(this.props.userid == user.id)? "text-warning" : ""}>{user.username}</td>
-              <td>{user.fullname}</td>
+              <td style={style} className={(this.props.userid == user.id)? "text-warning" : ""}>{user.username}</td>
+              <td style={style} >{user.fullname}</td>
               <td>
                 {(this.props.roles.includes('admin'))? <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleUserSelect(user.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger> : ''}{' '}
                 {(this.props.roles.includes('admin'))? <OverlayTrigger placement="top" overlay={tokenTooltip}><FontAwesomeIcon className="text-warning" onClick={ () => this.handleDisplayUserToken(user.id) } icon='eye' fixedWidth/></OverlayTrigger> : ''}{' '}

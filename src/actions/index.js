@@ -441,7 +441,7 @@ export function registerUser({username, fullname, password, email, reCaptcha = n
   }
 }
 
-export function createUser({username, fullname, password = '', email, roles, system_user = false}) {
+export function createUser({username, fullname, password = '', email, roles, disabled = false, system_user = false}) {
   return function (dispatch) {
     axios.post(`${API_ROOT_URL}/api/v1/users`,
     {username, fullname, password, email, roles, system_user},
@@ -862,6 +862,12 @@ export function updateUser(formProps) {
     fields.system_user = formProps.system_user;
   } else {
     fields.system_user = false;
+  }
+
+  if(formProps.disabled) {
+    fields.disabled = formProps.disabled;
+  } else {
+    fields.disabled = false;
   }
 
   return function (dispatch) {

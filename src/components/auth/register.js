@@ -48,7 +48,7 @@ class Register extends Component {
 
   renderSuccess() {
     if (this.props.message) {
-      const panelHeader = (<h4>New User Registration</h4>);
+      const panelHeader = (<h5>New User Registration</h5>);
 
       return (
         <Card className="form-signin" >
