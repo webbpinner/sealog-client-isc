@@ -22,7 +22,6 @@ class Cruises extends Component {
 
     this.state = {
       activePage: 1,
-      cruiseAccess: false,
       cruiseUpdate: false
     }
 
@@ -45,13 +44,7 @@ class Cruises extends Component {
 
   handleCruiseUpdate(id) {
     this.props.initCruise(id);
-    this.setState({cruiseUpdate: true, cruiseAccess: false});
-    window.scrollTo(0, 0);
-  }
-
-  handleCruiseAccess(id) {
-    this.props.initCruise(id);
-    this.setState({cruiseUpdate: false, cruiseAccess: true});
+    this.setState({cruiseUpdate: true});
     window.scrollTo(0, 0);
   }
 
@@ -65,7 +58,7 @@ class Cruises extends Component {
 
   handleCruiseCreate() {
     this.props.leaveUpdateCruiseForm();
-    this.setState({cruiseUpdate: false, cruiseAccess: false});
+    this.setState({cruiseUpdate: false});
   }
 
   handleCruiseImportModal() {
@@ -231,8 +224,6 @@ class Cruises extends Component {
   
       if(this.state.cruiseUpdate) {
         cruiseForm = <UpdateCruise handleFormSubmit={ this.props.fetchCruises } />
-      } else if(this.state.cruiseAccess) {
-        cruiseForm = <AccessCruise handleFormSubmit={ this.props.fetchCruises } />
       } else {
         cruiseForm = <CreateCruise handleFormSubmit={ this.props.fetchCruises } />
       }

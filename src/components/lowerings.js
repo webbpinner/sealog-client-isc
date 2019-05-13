@@ -120,9 +120,9 @@ class Lowerings extends Component {
         }
 
         let loweringLocation = (lowering.lowering_location)? <span>Location: {lowering.lowering_location}<br/></span> : null
-        let loweringStartTime = moment(lowering.start_ts)
-        let loweringEndTime = moment(lowering.stop_ts)
-        let loweringStarted = <span>Started: {loweringStartTime.format("YYYY-MM-DD hh:mm")}<br/></span>
+        let loweringStartTime = moment.utc(lowering.start_ts)
+        let loweringEndTime = moment.utc(lowering.stop_ts)
+        let loweringStarted = <span>Started: {loweringStartTime.format("YYYY-MM-DD HH:mm")}<br/></span>
         let loweringDuration = loweringEndTime.diff(loweringStartTime)
 
         let loweringDurationStr = <span>Duration: {moment.duration(loweringDuration).format("d [days] h [hours] m [minutes]")}<br/></span>

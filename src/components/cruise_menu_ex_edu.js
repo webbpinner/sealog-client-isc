@@ -190,13 +190,13 @@ class CruiseMenu extends Component {
   renderLoweringCard() {
 
     if(this.state.activeLowering){
-      let loweringStartTime = moment(this.state.activeLowering.start_ts)
-      let loweringEndTime = moment(this.state.activeLowering.stop_ts)
+      let loweringStartTime = moment.utc(this.state.activeLowering.start_ts)
+      let loweringEndTime = moment.utc(this.state.activeLowering.stop_ts)
       let loweringDurationValue = loweringEndTime.diff(loweringStartTime)
 
       let loweringDescription = (this.state.activeLowering.lowering_additional_meta.lowering_description)? <span><strong>Description:</strong> {this.state.activeLowering.lowering_additional_meta.lowering_description}<br/></span> : null
       let loweringLocation = (this.state.activeLowering.lowering_location)? <span><strong>Location:</strong> {this.state.activeLowering.lowering_location}<br/></span> : null
-      let loweringStarted = <span><strong>Started:</strong> {loweringStartTime.format("YYYY-MM-DD hh:mm")}<br/></span>
+      let loweringStarted = <span><strong>Started:</strong> {loweringStartTime.format("YYYY-MM-DD HH:mm")}<br/></span>
       let loweringDuration = <span><strong>Duration:</strong> {moment.duration(loweringDurationValue).format("d [days] h [hours] m [minutes]")}<br/></span>
       let loweringFiles = (this.state.activeLowering.lowering_additional_meta.lowering_files && this.state.activeLowering.lowering_additional_meta.lowering_files.length > 0)? <span><strong>Files:</strong><br/>{this.renderLoweringFiles(this.state.activeLowering.id, this.state.activeLowering.lowering_additional_meta.lowering_files)}</span>: null
 

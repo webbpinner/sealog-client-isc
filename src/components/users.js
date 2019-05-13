@@ -80,7 +80,7 @@ class Users extends Component {
     if (!this.props.showform) {
       return (
         <div className="float-right">
-          <Button variant="primary" size="sm" onClick={ () => this.handleUserCreate()}>Add User</Button>
+          <Button variant="primary" disabled={(!this.props.userid) ? true : false} size="sm" onClick={ () => this.handleUserCreate()}>Add User</Button>
         </div>
       );
     }
