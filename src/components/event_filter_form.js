@@ -48,6 +48,14 @@ class EventFilterForm extends Component {
         }
       }
 
+      if(formProps.value) {
+        formProps.value = formProps.value.split(',').map((value) => value.trim()).join(',')
+      }
+
+      if(formProps.author) {
+        formProps.author = formProps.author.split(',').map((author) => author.trim()).join(',')
+      }
+
     this.props.handlePostSubmit(formProps);
   }
 
