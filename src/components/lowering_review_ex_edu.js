@@ -405,7 +405,7 @@ class LoweringReview extends Component {
       }
 
       return (
-        <Pagination>
+        <Pagination style={{marginTop: "8px"}}>
           <Pagination.First onClick={() => this.handlePageSelect(1)} />
           <Pagination.Prev onClick={() => { if(this.state.activePage > 1) { this.handlePageSelect(this.state.activePage-1)}}} />
           {rangeWithDots}
