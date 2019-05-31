@@ -30,6 +30,8 @@ export const MAIN_SCREEN_TXT = "Sealog provides the Oceanographic Research commu
 // Title displayed on the left side of the title bar
 export const HEADER_TITLE = "ISC Sealog";
 
+// Use an internal tile server, or pull tiles directly from the Internet.
+export const USE_MAPTILE_PROXY = false;
 
 // ISC Specific Customization
 

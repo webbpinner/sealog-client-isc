@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import Cookies from 'universal-cookie';
-import { Button, Row, Col, Card, ListGroup, Dropdown, Pagination, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Button, Row, Col, Card, ListGroup, ButtonToolbar, Dropdown, Pagination, MenuItem, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
@@ -16,10 +16,10 @@ import { ROOT_PATH, API_ROOT_URL } from '../client_config';
 
 let fileDownload = require('js-file-download');
 
-const dateFormat = "YYYYMMDD"
-const timeFormat = "HHmm"
+const dateFormat = "YYYYMMDD";
+const timeFormat = "HHmm";
 
-const maxEventsPerPage = 15
+const maxEventsPerPage = 15;
 
 class EventManagement extends Component {
 
@@ -31,8 +31,9 @@ class EventManagement extends Component {
       activePage: 1,
       fetching: false,
       events: null,
+      eventCount: 0,
       eventFilter: {},
-    }
+    };
 
     this.handleEventUpdate = this.handleEventUpdate.bind(this);
     this.handleEventDelete = this.handleEventDelete.bind(this);
@@ -40,14 +41,16 @@ class EventManagement extends Component {
     this.updateEventFilter = this.updateEventFilter.bind(this);
   }
 
-  componentWillMount(){
+  componentDidMount(){
     if(!this.state.events){
-      this.fetchEventsForDisplay()
+      this.fetchEventsForDisplay();
+      this.fetchEventCount();
     }
   }
 
   handlePageSelect(eventKey) {
     this.setState({activePage: eventKey});
+    this.fetchEventsForDisplay(this.state.eventFilter, eventKey);
   }
 
   handleEventCommentModal(event) {
@@ -56,19 +59,20 @@ class EventManagement extends Component {
 
   updateEventFilter(filter = {}) {
     this.setState({ activePage: 1, eventFilter: filter });
-    this.fetchEventsForDisplay(filter);
+    this.fetchEventsForDisplay(filter, 1);
+    this.fetchEventCount(filter);
   }
 
   async handleEventUpdate(event_id, event_value, event_free_text, event_options, event_ts) {
-    const response = await this.props.updateEvent(event_id, event_value, event_free_text, event_options, event_ts)
-    if(response.response.status == 204) {
+    const response = await this.props.updateEvent(event_id, event_value, event_free_text, event_options, event_ts);
+    if(response.response.status === 204) {
       this.setState(prevState => ({events: prevState.events.map((event) => {
-          if(event.id === event_id) {
-            event.event_options = event_options;
-          }
-          return event;
-        })
-      }))
+        if(event.id === event_id) {
+          event.event_options = event_options;
+        }
+        return event;
+      })
+      }));
     }
   }
 
@@ -77,11 +81,11 @@ class EventManagement extends Component {
   }
 
   async handleEventDelete(id) {
-    const response = await this.props.deleteEvent(id)
-    if(response.response.status == 204) {
-      this.setState({events: this.state.events.filter(event => event.id != id)})
+    const response = await this.props.deleteEvent(id);
+    if(response.response.status === 204) {
+      this.setState({events: this.state.events.filter(event => event.id !== id)});
       if((this.state.events.length % maxEventsPerPage) === 0 && (this.state.events.length / maxEventsPerPage) === (this.state.activePage-1) ) {
-        this.setState( prevState => ({activePage: prevState.activePage-1}))
+        this.handlePageSelect(this.state.activePage-1);
       }
     }
   }
@@ -90,54 +94,83 @@ class EventManagement extends Component {
     this.props.showModal('eventShowDetails', { event: event, handleUpdateEvent: this.handleEventUpdate });
   }
 
-  async fetchEventsForDisplay(eventFilter = this.state.eventFilter) {
+  async fetchEventsForDisplay(eventFilter = this.state.eventFilter, activePage = this.state.activePage) {
 
-    this.setState({fetching: true})
+    this.setState({fetching: true});
 
     const cookies = new Cookies();
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : ''
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : ''
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : ''
+    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
+    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
+    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
     value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : ''
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : ''
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : ''
+    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
+    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
+    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+    let offset = `&offset=${(activePage-1)*maxEventsPerPage}`;
+    let limit = `&limit=${maxEventsPerPage}`;
 
-    await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+
+    await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${offset}${limit}`,
       {
         headers: {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        this.setState({fetching: false})
-        this.setState({events: response.data})
-      }).catch((error)=>{
-        console.log(error)
-
-        console.log("?? 1")
-        if(error.response.data.statusCode == 404){
-          this.setState({fetching: false})
-          this.setState({events: []})
-        } else {
-          console.log(error.response);
-          this.setState({fetching: false})
-          this.setState({events: []})
-        }
+      this.setState({fetching: false});
+      this.setState({events: response.data});
+    }).catch((error)=>{
+      if(error.response.data.statusCode === 404){
+        this.setState({fetching: false});
+        this.setState({events: []});
+      } else {
+        console.log(error.response);
+        this.setState({fetching: false});
+        this.setState({events: []});
       }
+    }
+    );
+  }
+
+  async fetchEventCount(eventFilter = this.state.eventFilter) {
+
+    const cookies = new Cookies();
+    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
+    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
+    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
+    value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
+    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
+    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
+    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+
+    await axios.get(`${API_ROOT_URL}/api/v1/events/count?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+      {
+        headers: {
+          authorization: cookies.get('token')
+        }
+      }).then((response) => {
+      this.setState({eventCount: response.data.events});
+    }).catch((error)=>{
+      if(error.response.data.statusCode === 404){
+        this.setState({eventCount: 0});
+      } else {
+        console.log(error.response);
+        this.setState({eventCount: 0});
+      }
+    }
     );
   }
 
   fetchEvents(format = 'json', eventFilter = this.state.eventFilter) {
 
     const cookies = new Cookies();
-    format = `format=${format}`
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : ''
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : ''
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : ''
+    format = `format=${format}`;
+    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
+    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
+    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
     value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : ''
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : ''
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : ''
+    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
+    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
+    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
     return axios.get(`${API_ROOT_URL}/api/v1/events?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
@@ -145,28 +178,28 @@ class EventManagement extends Component {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        return response.data
-      }).catch((error)=>{
-        if(error.response.data.statusCode == 404){
-          return []
-        } else {
-          console.log(error.response);
-          return []
-        }
+      return response.data;
+    }).catch((error)=>{
+      if(error.response.data.statusCode === 404){
+        return [];
+      } else {
+        console.log(error.response);
+        return [];
       }
+    }
     );
   }
 
   fetchEventAuxData(eventFilter = this.state.eventFilter) {
 
     const cookies = new Cookies();
-    let startTS = (eventFilter.startTS)? `startTS=${eventFilter.startTS}` : ''
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : ''
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : ''
+    let startTS = (eventFilter.startTS)? `startTS=${eventFilter.startTS}` : '';
+    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
+    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
     value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : ''
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : ''
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : ''
+    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
+    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
+    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
     return axios.get(`${API_ROOT_URL}/api/v1/event_aux_data?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
@@ -174,29 +207,29 @@ class EventManagement extends Component {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        return response.data
-      }).catch((error)=>{
-        if(error.response.data.statusCode == 404){
-          return []
-        } else {
-          console.log(error.response);
-          return []
-        }
+      return response.data;
+    }).catch((error)=>{
+      if(error.response.data.statusCode === 404){
+        return [];
+      } else {
+        console.log(error.response);
+        return [];
       }
+    }
     );
   }
 
   fetchEventsWithAuxData(format = 'json', eventFilter = this.state.eventFilter) {
 
     const cookies = new Cookies();
-    format = `format=${format}`
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : ''
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : ''
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : ''
+    format = `format=${format}`;
+    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
+    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
+    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
     value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : ''
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : ''
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : ''
+    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
+    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
+    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
     return axios.get(`${API_ROOT_URL}/api/v1/event_exports?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
@@ -204,78 +237,78 @@ class EventManagement extends Component {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        return response.data
-      }).catch((error)=>{
-        if(error.response.data.statusCode == 404){
-          return []
-        } else {
-          console.log(error.response);
-          return []
-        }
+      return response.data;
+    }).catch((error)=>{
+      if(error.response.data.statusCode === 404){
+        return [];
+      } else {
+        console.log(error.response);
+        return [];
       }
+    }
     );
   }
 
   exportEventsWithAuxDataToCSV() {
     this.fetchEventsWithAuxData('csv').then((results) => {
-      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat)
+      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(results, `${prefix}.sealog_export.csv`);
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   }
 
   exportEventsToCSV() {
     this.fetchEvents('csv').then((results) => {
-      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat)
+      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(results, `${prefix}.sealog_eventExport.csv`);
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   }
 
   exportEventsWithAuxDataToJSON() {
     this.fetchEventsWithAuxData().then((results) => {
-      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat)
+      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results, null, 2), `${prefix}.sealog_export.json`);
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   }
 
   exportEventsToJSON() {
 
     this.fetchEvents().then((results) => {
-      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat)
+      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results, null, 2), `${prefix}.sealog_eventExport.json`);
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   }
 
   exportAuxDataToJSON() {
 
     this.fetchEventAuxData().then((results) => {
-      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat)
+      let prefix = moment.utc(this.state.events[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results, null, 2), `${prefix}.sealog_auxDataExport.json`);
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   }
 
   async toggleASNAP() {
-    await this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}))
+    await this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}));
     this.fetchEventsForDisplay();
   }
 
   renderEventListHeader() {
 
-    const Label = "Filtered Events"
-    const exportTooltip = (<Tooltip id="deleteTooltip">Export these events</Tooltip>)
-    const toggleASNAPTooltip = (<Tooltip id="toggleASNAPTooltip">Show/Hide ASNAP Events</Tooltip>)
+    const Label = "Filtered Events";
+    const exportTooltip = (<Tooltip id="deleteTooltip">Export these events</Tooltip>);
+    const toggleASNAPTooltip = (<Tooltip id="toggleASNAPTooltip">Show/Hide ASNAP Events</Tooltip>);
 
-    const ASNAPToggleIcon = (this.state.hideASNAP)? "Show ASNAP" : "Hide ASNAP"
-    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>)
+    const ASNAPToggleIcon = (this.state.hideASNAP)? "Show ASNAP" : "Hide ASNAP";
+    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>);
 
     return (
       <div>
@@ -305,57 +338,52 @@ class EventManagement extends Component {
     if(this.state.events && this.state.events.length > 0){
 
       let eventList = this.state.events.map((event, index) => {
-        if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
-
-          let comment_exists = false;
-          let edu_event = (event.event_value == "EDU")? true : false;
-          let seatube_exists = false;
-          let seatube_permalink = '';
-          let youtube_material = false;
-
-          let eventOptionsArray = event.event_options.reduce((filtered, option) => {
-            if(option.event_option_name == 'event_comment') {
-              comment_exists = (option.event_option_value !== '')? true : false;
-            } else if(edu_event && option.event_option_name == 'seatube_permalink') {
-              seatube_exists = (option.event_option_value !== '')? true : false;
-              seatube_permalink = option.event_option_value;
-            } else if(edu_event && option.event_option_name == 'youtube_material') {
-              youtube_material = (option.event_option_value == 'Yes')? true : false;
-            } else {
-              filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
-            }
-            return filtered
-          },[])
-          
-          if (event.event_free_text) {
-            eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`)
-          } 
-
-          let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): ''
-       // let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={ "text-secondary" } icon='plus' fixedWidth inverse transform="shrink-4"/></span>
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={ "text-secondary" } icon='plus' fixedWidth inverse transform="shrink-4"/></span>
-          let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>)
-
-          let deleteIcon = <FontAwesomeIcon className={"text-danger"} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth/>
-       // let deleteTooltip = (this.props.roles && this.props.roles.includes("admin"))? (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>): null
-          let deleteTooltip = (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>)
-
-          let permalinkTooltip = null
-          let youtubeTooltip = null
-
-          if(edu_event) {
-            permalinkTooltip = (seatube_permalink)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth transform="grow-4"/></a></OverlayTrigger>) : null
-            youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
+        let comment_exists = false;
+        let edu_event = (event.event_value == "EDU")? true : false;
+        let seatube_exists = false;
+        let seatube_permalink = '';
+        let youtube_material = false;
+  
+        let eventOptionsArray = event.event_options.reduce((filtered, option) => {
+          if(option.event_option_name === 'event_comment') {
+            comment_exists = (option.event_option_value !== '')? true : false;
+          } else if(edu_event && option.event_option_name == 'seatube_permalink') {
+            seatube_exists = (option.event_option_value !== '')? true : false;
+            seatube_permalink = option.event_option_value;
+          } else if(edu_event && option.event_option_name == 'youtube_material') {
+            youtube_material = (option.event_option_value == 'Yes')? true : false;
+          } else {
+            filtered.push(`${option.event_option_name}: \"${option.event_option_value}\"`);
           }
+          return filtered;
+        },[]);
+        
+        if (event.event_free_text) {
+          eventOptionsArray.push(`free_text: \"${event.event_free_text}\"`);
+        } 
 
-       // return (<ListGroupItem className="event-list-item" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{deleteTooltip} {commentTooltip}</span></ListGroupItem>);
-          return (<ListGroup.Item className="event-list-item" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span>{commentTooltip} {permalinkTooltip} {youtubeTooltip} {deleteTooltip}</span></ListGroup.Item>);
+        let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
+        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={ "text-secondary" } icon='plus' fixedWidth inverse transform="shrink-4"/></span>;
+        let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
+
+        let deleteIcon = <FontAwesomeIcon className={"text-danger"} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth/>;
+        let deleteTooltip = (this.props.roles && this.props.roles.includes("admin"))? (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>): null;
+
+        let permalinkTooltip = null
+        let youtubeTooltip = null
+
+        if(edu_event) {
+          permalinkTooltip = (seatube_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Open Seatube Permalink</Tooltip>}><a href={seatube_permalink} target="_blank"><FontAwesomeIcon icon='link' fixedWidth /></a></OverlayTrigger>) : null
+          youtubeTooltip = (youtube_material)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>This is YouTube material</Tooltip>}><FontAwesomeIcon icon={['fab', 'youtube']} fixedWidth/></OverlayTrigger>) : null
         }
-      })
-      return eventList
+
+        return (<ListGroup.Item className="event-list-item" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{youtubeTooltip} {permalinkTooltip} {deleteTooltip} {commentTooltip} </span></ListGroup.Item>);
+      });
+
+      return eventList;
     }
 
-    return (<ListGroup.Item key="emptyHistory" >No events found</ListGroup.Item>)
+    return (<ListGroup.Item key="emptyHistory" >No events found</ListGroup.Item>);
   }
 
   renderEventCard() {
@@ -366,7 +394,7 @@ class EventManagement extends Component {
           <Card.Header>{ this.renderEventListHeader() }</Card.Header>
           <Card.Body>Loading...</Card.Body>
         </Card>
-      )
+      );
     }
 
     return (
@@ -381,43 +409,43 @@ class EventManagement extends Component {
 
   renderPagination() {
 
-    if(!this.state.fetching && this.state.events && this.state.events.length > maxEventsPerPage) {
-      let eventCount = this.state.events.length
+    if(this.state.eventCount > maxEventsPerPage) {
+      let eventCount = this.state.eventCount;
       let last = Math.ceil(eventCount/maxEventsPerPage);
-      let delta = 2
-      let left = this.state.activePage - delta
-      let right = this.state.activePage + delta + 1
-      let range = []
-      let rangeWithDots = []
-      let l = null
+      let delta = 2;
+      let left = this.state.activePage - delta;
+      let right = this.state.activePage + delta + 1;
+      let range = [];
+      let rangeWithDots = [];
+      let l = null;
 
       for (let i = 1; i <= last; i++) {
-        if (i == 1 || i == last || i >= left && i < right) {
-            range.push(i);
+        if (i === 1 || i === last || i >= left && i < right) {
+          range.push(i);
         }
       }
 
       for (let i of range) {
         if (l) {
           if (i - l === 2) {
-            rangeWithDots.push(<Pagination.Item key={l + 1} active={(this.state.activePage === l+1)} onClick={() => this.setState({activePage: (l + 1)})}>{l + 1}</Pagination.Item>)
+            rangeWithDots.push(<Pagination.Item key={l + 1} active={(this.state.activePage === l+1)} onClick={() => this.handlePageSelect((l + 1))}>{l + 1}</Pagination.Item>);
           } else if (i - l !== 1) {
             rangeWithDots.push(<Pagination.Ellipsis key={`ellipsis_${i}`} />);
           }
         }
-        rangeWithDots.push(<Pagination.Item key={i} active={(this.state.activePage === i)} onClick={() => this.setState({activePage: i})}>{i}</Pagination.Item>);
+        rangeWithDots.push(<Pagination.Item key={i} active={(this.state.activePage === i)} onClick={() => this.handlePageSelect(i)}>{i}</Pagination.Item>);
         l = i;
       }
 
       return (
-        <Pagination>
-          <Pagination.First onClick={() => this.setState({activePage: 1})} />
-          <Pagination.Prev onClick={() => { if(this.state.activePage > 1) { this.setState(prevState => ({ activePage: prevState.activePage-1}))}}} />
+        <Pagination style={{marginTop: "8px"}}>
+          <Pagination.First onClick={() => this.handlePageSelect(1)} />
+          <Pagination.Prev onClick={() => { if(this.state.activePage > 1) { this.handlePageSelect(this.state.activePage-1)}}} />
           {rangeWithDots}
-          <Pagination.Next onClick={() => { if(this.state.activePage < last) { this.setState(prevState => ({ activePage: prevState.activePage+1}))}}} />
-          <Pagination.Last onClick={() => this.setState({activePage: last})} />
+          <Pagination.Next onClick={() => { if(this.state.activePage < last) { this.handlePageSelect(this.state.activePage+1)}}} />
+          <Pagination.Last onClick={() => this.handlePageSelect(last)} />
         </Pagination>
-      )
+      );
     }
   }
 
@@ -427,7 +455,6 @@ class EventManagement extends Component {
         <EventCommentModal />
         <DeleteEventModal />
         <EventShowDetailsModal />
-        <EventPermalinkModal />
         <Row>
           <Col sm={12} md={8} lg={8}>
             {this.renderEventCard()}
@@ -438,16 +465,15 @@ class EventManagement extends Component {
           </Col>
         </Row>
       </div>
-    )
+    );
   }
-
 }
 
 function mapStateToProps(state) {
   return {
     roles: state.user.profile.roles,
     event: state.event,
-  }
+  };
 }
 
 export default connect(mapStateToProps, null)(EventManagement);

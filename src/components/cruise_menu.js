@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Accordion, Button, Container, Row, Col, Card, CardGroup } from 'react-bootstrap';
 import FileDownload from 'js-file-download';
-import { API_ROOT_URL, MAIN_SCREEN_TXT, MTU } from '../client_config';
+import { API_ROOT_URL, MAIN_SCREEN_TXT } from '../client_config';
 
 import * as actions from '../actions';
 
@@ -249,7 +249,6 @@ class CruiseMenu extends Component {
       let cruiseLocation = (this.state.activeCruise.cruise_location)? <span><strong>Location:</strong> {this.state.activeCruise.cruise_location}<br/></span> : null;
       let cruiseDates = <span><strong>Dates:</strong> {moment.utc(this.state.activeCruise.start_ts).format("YYYY/MM/DD")} - {moment.utc(this.state.activeCruise.stop_ts).format("YYYY/MM/DD")}<br/></span>;
       let cruisePi = (this.state.activeCruise.cruise_pi)? <span><strong>Chief Scientist:</strong> {this.state.activeCruise.cruise_pi}<br/></span> : null;
-      let cruiseMTU = (MTU && this.state.activeCruise.cruise_additional_meta.mtu_id)? <span><strong>MTU ID:</strong> {this.state.activeCruise.cruise_additional_meta.mtu_id}<br/></span> : null
       let cruiseLowerings = this.props.lowerings.filter(lowering => moment.utc(lowering.start_ts).isBetween(moment.utc(this.state.activeCruise.start_ts), moment.utc(this.state.activeCruise.stop_ts)))
       // let cruiseLinkToR2R = (this.state.activeCruise.cruise_additional_meta.cruise_linkToR2R)? <span><strong>R2R Cruise Link :</strong> <a href={`${this.state.activeCruise.cruise_additional_meta.cruise_linkToR2R}`} target="_blank"><FontAwesomeIcon icon='link' fixedWidth/></a><br/></span> : null
 
@@ -276,7 +275,6 @@ class CruiseMenu extends Component {
             {cruiseLocation}
             {cruiseDates}
             {cruisePi}
-            {cruiseMTU}
             {cruiseFiles}
             { (cruiseLowerings && cruiseLowerings.length > 0)? (
               <div>
@@ -367,7 +365,6 @@ class CruiseMenu extends Component {
       let cruiseLocation = (cruise.cruise_location)? <span><strong>Location:</strong> {cruise.cruise_location}<br/></span> : null;
       let cruiseDates = <span><strong>Dates:</strong> {moment.utc(cruise.start_ts).format("YYYY/MM/DD")} - {moment.utc(cruise.stop_ts).format("YYYY/MM/DD")}<br/></span>;
       let cruisePI = <span><strong>Chief Scientist:</strong> {cruise.cruise_pi}<br/></span>;
-      let cruiseMTU = (MTU && cruise.cruise_additional_meta.mtu_id)? <span><strong>MTU ID:</strong> {cruise.cruise_additional_meta.mtu_id}<br/></span> : null
       let cruiseFiles = (cruise.cruise_additional_meta.cruise_files && cruise.cruise_additional_meta.cruise_files.length > 0)? <span><strong>Files:</strong><br/>{this.renderCruiseFiles(cruise.id, cruise.cruise_additional_meta.cruise_files)}</span>: null;
       
       let lowerings = (this.state.cruiseLowerings)? (
@@ -395,7 +392,6 @@ class CruiseMenu extends Component {
               {cruiseLocation}
               {cruiseDates}
               {cruisePI}
-              {cruiseMTU}
               {cruiseFiles}
               {
                 (this.state.cruiseLowerings && this.state.cruiseLowerings.length > 0)? (

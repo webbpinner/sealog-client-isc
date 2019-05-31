@@ -93,7 +93,7 @@ class EventTemplateOptionsModal extends Component {
 
     //Remove empty fields
     optionValue.forEach((value, index) => {
-      if(value == "") {
+      if(value === "") {
         optionIndex.splice(index, 1);
         optionValue.splice(index, 1);
       }
@@ -102,9 +102,13 @@ class EventTemplateOptionsModal extends Component {
     //Build event_options array
     let event_options = optionIndex.map( (value, index) => {
 
-      if(optionValue[index].constructor === Array) {
+      if(Array.isArray(optionValue[index])) {
         optionValue[index] = optionValue[index].join(';')
       }
+
+      // if(optionValue[index].constructor === Array) {
+      //   optionValue[index] = optionValue[index].join(';')
+      // }
 
       return (
         { event_option_name: this.props.eventTemplate.event_options[value].event_option_name,
@@ -258,7 +262,7 @@ class EventTemplateOptionsModal extends Component {
 
     return ( event_options.map((option, index) => {
 
-      if (option.event_option_type == 'dropdown') {
+      if (option.event_option_type === 'dropdown') {
 
         return (
           <div key={`option_${index}`}>
@@ -273,7 +277,7 @@ class EventTemplateOptionsModal extends Component {
             />
           </div>
         )
-      } else if (option.event_option_type == 'checkboxes') {
+      } else if (option.event_option_type === 'checkboxes') {
 
         let defaultOption = ( <option key={`${option.event_option_name}.empty_value`}></option> );
 
@@ -293,7 +297,7 @@ class EventTemplateOptionsModal extends Component {
             />
           </div>
         )
-      } else if (option.event_option_type == 'text') {
+      } else if (option.event_option_type === 'text') {
         return (
           <div key={`option_${index}`}>
             <Field
@@ -362,7 +366,7 @@ function validate(formProps) {
     errors.event_ts = 'Required'
   }
 
-  if (formProps.event_ts != "" && !moment.utc(formProps.event_ts).isValid()) {
+  if (formProps.event_ts !== "" && !moment.utc(formProps.event_ts).isValid()) {
     errors.event_ts = 'Invalid timestamp'
   }
 

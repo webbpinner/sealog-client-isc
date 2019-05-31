@@ -25,7 +25,7 @@ class EventCommentModal extends Component {
     handleUpdateEvent: PropTypes.func.isRequired
   };
 
-  componentWillMount() {
+  componentDidMount() {
   }
 
   componentWillUnmount() {
@@ -35,7 +35,7 @@ class EventCommentModal extends Component {
 
     let existing_comment = false;
     let event_options = this.props.event.event_options = this.props.event.event_options.map(event_option => {
-      if(event_option.event_option_name == 'event_comment') {
+      if(event_option.event_option_name === 'event_comment') {
         existing_comment = true;
         return { event_option_name: 'event_comment', event_option_value: event_comment}
       } else {
@@ -103,7 +103,7 @@ EventCommentModal = reduxForm({
 
 function mapStateToProps(state, ownProps) {
 
-  let event_option_comment = ownProps.event.event_options.find(event_option => event_option.event_option_name == 'event_comment')
+  let event_option_comment = ownProps.event.event_options.find(event_option => event_option.event_option_name === 'event_comment')
   if(event_option_comment) {
     return {
       initialValues: { event_comment: event_option_comment.event_option_value }

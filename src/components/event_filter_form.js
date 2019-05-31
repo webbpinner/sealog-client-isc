@@ -21,13 +21,31 @@ class EventFilterForm extends Component {
 
   static propTypes = {
     handlePostSubmit: PropTypes.func.isRequired,
+    initialValues: PropTypes.object
   };
 
-  componentWillMount() {
+  componentDidMount() {
+    if(this.props.initialValues) {
+      this.props.initialize(this.props.initialValues);
+    }
+  }
+
+  componentWillReceiveProps() {
   }
 
   componentWillUnmount() {
-    this.props.leaveEventFilterForm();
+    // this.props.leaveEventFilterForm();
+  }
+
+
+  async populateDefaultValues() {
+    let eventDefaultValues = {event_ts: moment.utc(timestring)};
+    this.props.eventTemplate.event_options.forEach((option, index) => {
+      if(option.event_option_default_value) {
+        eventDefaultValues[`option_${index}`] = option.event_option_default_value;
+      }
+    });
+    this.props.initialize(eventDefaultValues);
   }
 
   handleFormSubmit(formProps) {
@@ -192,14 +210,14 @@ function validate(formProps) {
 function mapStateToProps(state) {
 
   return {
-    initialValues: state.event.eventFilter,
+    // initialValues: state.event.eventFilter,
   };
 
 }
 
 EventFilterForm = reduxForm({
   form: 'eventFilterForm',
-  enableReinitialize: true,
+  // enableReinitialize: true,
   validate: validate
 })(EventFilterForm);
 

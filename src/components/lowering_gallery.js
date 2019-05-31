@@ -5,7 +5,7 @@ import moment from 'moment';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { Row, Col, Tabs, Tab } from 'react-bootstrap';
-import EventShowDetailsModal from './event_show_details_modal_ex_edu';
+import EventShowDetailsModal from './event_show_details_modal';
 import LoweringGalleryTab from './lowering_gallery_tab';
 import LoweringDropdown from './lowering_dropdown';
 import LoweringModeDropdown from './lowering_mode_dropdown';
@@ -54,7 +54,7 @@ class LoweringGallery extends Component {
   componentWillUnmount(){
   }
 
-  initLoweringImages(id, auxDatasourceFilter = 'framegrabber') {
+  initLoweringImages(id, auxDatasourceFilter = 'vehicleRealtimeFramegrabberData') {
     this.setState({ fetching: true});
 
     let url = `${API_ROOT_URL}/api/v1/event_aux_data/bylowering/${id}?datasource=${auxDatasourceFilter}`;
@@ -73,9 +73,7 @@ class LoweringGallery extends Component {
             image_data[data.data_array[i].data_value] = { images: [] };
           }
 
-          if(data.data_array[i+1]) {
-            image_data[data.data_array[i].data_value].images.unshift({ event_id: data.event_id, filepath: API_ROOT_URL + IMAGE_PATH + data.data_array[i+1].data_value });            
-          }
+          image_data[data.data_array[i].data_value].images.unshift({ event_id: data.event_id, filepath: API_ROOT_URL + IMAGE_PATH + data.data_array[i+1].data_value });
         }
       });
 

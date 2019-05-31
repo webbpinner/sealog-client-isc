@@ -11,7 +11,7 @@ class Header extends Component {
     super(props);
   }
 
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.authenticated) {
       this.props.updateProfileState();
     }
@@ -20,9 +20,9 @@ class Header extends Component {
   handleASNAPToggle() {
     if(this.props.asnapStatus) {
       if(this.props.asnapStatus.custom_var_value === 'Off') {
-        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'On'})
+        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'On'});
       } else {
-        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'Off'})
+        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'Off'});
       }
     }
   }
@@ -44,7 +44,7 @@ class Header extends Component {
   }
 
   renderEventManagementOptions() {
-    if(this.props.roles.includes('admin')) {
+    if(this.props.roles.includes('admin') || this.props.roles.includes('event_manager')) {
       return (
         <NavDropdown.Item href="/event_management">Event Management</NavDropdown.Item>
       );
@@ -52,7 +52,7 @@ class Header extends Component {
   }
 
   renderEventTemplateOptions() {
-    if(this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager') || this.props.roles.includes('event_manager')) {
+    if(this.props.roles.includes('admin') || this.props.roles.includes('template_manager')) {
       return (
         <NavDropdown.Item href="/event_templates">Event Templates</NavDropdown.Item>
       );
@@ -92,7 +92,7 @@ class Header extends Component {
   }
 
   renderSystemManagerDropdown() {
-    if(this.props.roles && (this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager') || this.props.roles.includes('event_manager'))) {
+    if(this.props.roles && (this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager') || this.props.roles.includes('template_manager') || this.props.roles.includes('event_manager'))) {
       return (
         <NavDropdown title={'System Management'} id="basic-nav-dropdown-system">
           {this.renderCruiseOptions()}
@@ -108,13 +108,13 @@ class Header extends Component {
   }
 
   renderUserDropdown() {
-    if(this.props.authenticated){
+    if(this.props.authenticated) {
       return (
-      <NavDropdown title={<span>{this.props.fullname} <FontAwesomeIcon icon="user" /></span>} id="basic-nav-dropdown-user">
-          <NavDropdown.Item href="/profile" key="profile" >User Profile</NavDropdown.Item>
+        <NavDropdown title={<span>{this.props.fullname} <FontAwesomeIcon icon="user" /></span>} id="basic-nav-dropdown-user">
+          {(this.props.fullname !== "Guest") ? <NavDropdown.Item href="/profile" key="profile" >User Profile</NavDropdown.Item> : null }
           {(this.props.fullname !== 'Guest' && RECAPTCHA_SITE_KEY === "")? (<NavDropdown.Item key="switch2Guest" onClick={ () => this.handleSwitchToGuest() } >Switch to Guest</NavDropdown.Item>) : null }
-        <NavDropdown.Item key="logout" onClick={ () => this.handleLogout() } >Log Out</NavDropdown.Item>
-      </NavDropdown>
+          <NavDropdown.Item key="logout" onClick={ () => this.handleLogout() } >Log Out</NavDropdown.Item>
+        </NavDropdown>
       );
     }
   }
@@ -126,18 +126,6 @@ class Header extends Component {
   handleSwitchToGuest() {
     this.props.switch2Guest();
   }
-
-  // handleSwitchToPilot() {
-  //   this.props.switch2Pilot();
-  // }
-
-  // handleSwitchToStbdObs() {
-  //   this.props.switch2StbdObs();
-  // }
-
-  // handleSwitchToPortObs() {
-  //   this.props.switch2PortObs();
-  // }
 
   render () {
     return (
@@ -157,7 +145,7 @@ class Header extends Component {
 }
 
 function mapStateToProps(state){
-  let asnapStatus = (state.custom_var)? state.custom_var.custom_vars.find(custom_var => custom_var.custom_var_name === "asnapStatus") : null
+  let asnapStatus = (state.custom_var)? state.custom_var.custom_vars.find(custom_var => custom_var.custom_var_name === "asnapStatus") : null;
 
   return {
     authenticated: state.auth.authenticated,
